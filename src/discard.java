@@ -1,6 +1,7 @@
 public class discard {
-  discard next;
-  card card;
+  protected discard next;
+  private card card;
+
   discard(){
     next = null;
     card = null;
@@ -8,5 +9,4 @@ public class discard {
   discard(card discarded){
     card = discarded;
   }
-
 }

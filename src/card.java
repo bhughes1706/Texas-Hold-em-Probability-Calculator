@@ -11,13 +11,13 @@ public class card {
     suit = to_copy.suit;
   }
   protected void display() {
-    System.out.print("\nThe " );
+    System.out.print(" The " );
     switch(value){
-      case 9: System.out.print("The Jack "); break;
-      case 10: System.out.print("The Queen"); break;
-      case 11: System.out.print("The King"); break;
-      case 12: System.out.print("The Ace"); break;
-      default: System.out.print("The " + (value + 2)); break;
+      case 9: System.out.print("Jack "); break;
+      case 10: System.out.print("Queen"); break;
+      case 11: System.out.print("King"); break;
+      case 12: System.out.print("Ace"); break;
+      default: System.out.print((value + 2)); break;
     }
     switch(suit){
       case 0: System.out.print(" of Hearts"); break;

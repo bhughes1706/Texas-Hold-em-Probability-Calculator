@@ -15,6 +15,7 @@ class hand {
   }
   protected void display() {
     for(int i = 0; i < total_cards; ++i){
+      System.out.println("\nCard " + (i+1) + ":");
       hand[i].display();
     }
   }
