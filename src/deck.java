@@ -1,11 +1,11 @@
 import java.util.Random;
 
 class deck {
-  node head;
-  int deck_size;
-  hand hand[];
-  int hand_count;
-  final int max_players = 6;
+  private node head;
+  private int deck_size;
+  private hand hand[];
+  private int hand_count;
+  private final int max_players = 6;
 
   deck(){
     head = null;
@@ -40,12 +40,14 @@ class deck {
     hand[hand_count] = new hand();
     ++hand_count;
   }
-  protected void deal_card(int hand_number) throws NullPointerException {
+  protected int deal_card(int hand_number) throws NullPointerException {
+    if(head == null) return 0;
     Random rand = new Random();
     int card_placement = rand.nextInt(deck_size);
     card temp = deal_from_deck(head, card_placement);
     hand[hand_number].add(temp);
     --deck_size;
+    return 1;
   }
   private card deal_from_deck(int card_placement){
     if(card_placement == 0){
@@ -74,6 +76,7 @@ class deck {
     return temp_card;
   }
   protected void display(int hand_number){
+    System.out.println("\nYour hand:");
     hand[hand_number].display();
   }
 }

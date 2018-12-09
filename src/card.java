@@ -1,6 +1,6 @@
 public class card {
-  protected int value;
-  protected int suit;
+  private int value;
+  private int suit;
 
   card(int suit_init, int value_init){
     value = value_init;
