@@ -1,3 +1,5 @@
+import java.util.Random;
+
 class deck {
   node head;
   int deck_size;
@@ -12,7 +14,7 @@ class deck {
     hand = new hand[max_players];
     }
   protected void init_deck(){ deck_size = build_deck(0); }
-  protected int build_deck(){
+  protected int build_deck() throws NullPointerException {
     return build_deck(0);
   }
   private int build_deck(int suit){
@@ -37,10 +39,41 @@ class deck {
     temp.next = head;
     head = temp;
   }
-  protected void add_hand(){
+  void add_hand(){
     hand[hand_count] = new hand();
+    ++hand_count;
   }
-  protected void deal_card(hand add_to){
-
+  protected void deal_card(int hand_number) throws NullPointerException {
+    Random rand = new Random();
+    int card_placement = rand.nextInt(deck_size);
+    card temp = deal_from_deck(head, card_placement);
+    hand[hand_number].add(temp);
+    --deck_size;
+  }
+  private card deal_from_deck(int card_placement){
+    if(card_placement == 0){
+      node temp = head;
+      head = temp.next;
+      return temp.card;
+    }
+    return deal_from_deck(head, card_placement);
+  }
+  private card deal_from_deck(node head, int card_placement){
+    if(head == null)
+      return null;
+    if(card_placement == 1)
+      return remove_card(head);
+    return deal_from_deck(head.next, --card_placement);
+  }
+  private card remove_card(node head){
+    card temp_card = head.next.card;
+    if(head.next.next == null){
+      head.next = null;
+      return temp_card;
+    }
+    node temp_node = head.next.next;
+    head.next = null;
+    head.next = temp_node;
+    return temp_card;
   }
 }

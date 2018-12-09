@@ -6,10 +6,10 @@ public class CardProbability {
     System.out.println("\nThis is a program that trains the user to determine the " +
         "\nprobability that their card hand will beat a generic hand.");
     deck deck = new deck();
-    deck.build_deck();
-    deck.add_hand();
-
-
+    try {
+      deck.build_deck();
+      deck.add_hand();
+    } catch (NullPointerException err){}
   }
 }
 

@@ -6,4 +6,8 @@ public class card {
     value = value_init;
     suit = suit_init;
   }
+  card(card to_copy){
+    value = to_copy.value;
+    suit = to_copy.suit;
+  }
 }

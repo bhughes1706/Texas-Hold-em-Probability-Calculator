@@ -8,5 +8,8 @@ class hand {
     hand = new card[max_cards];
     total_cards = 0;
   }
-  hand(int init){}
+  void add(card to_add){
+    hand[total_cards] = new card(to_add);
+    ++total_cards;
+  }
 }
