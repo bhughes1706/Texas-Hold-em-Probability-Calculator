@@ -14,9 +14,6 @@ class deck {
     hand = new hand[max_players];
     }
   protected void init_deck(){ deck_size = build_deck(0); }
-  protected int build_deck() throws NullPointerException {
-    return build_deck(0);
-  }
   private int build_deck(int suit){
     int count = 0;
     if(suit == 4)
@@ -75,5 +72,8 @@ class deck {
     head.next = null;
     head.next = temp_node;
     return temp_card;
+  }
+  protected void display(int hand_number){
+    hand[hand_number].display();
   }
 }

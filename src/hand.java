@@ -12,4 +12,9 @@ class hand {
     hand[total_cards] = new card(to_add);
     ++total_cards;
   }
+  protected void display() {
+    for(int i = 0; i < total_cards; ++i){
+      hand[i].display();
+    }
+  }
 }
