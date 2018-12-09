@@ -9,11 +9,19 @@ public class CardProbability {
     try {
       deck.init_deck();
       deck.add_hand();
-      for(int i = 0; i < 3; ++i)
-        deck.deal_card(0);
+      for(int i = 0; i < 3; ++i){
+        if(deck.deal_card(0) == 0)
+          System.out.println("\nEmpty deck."); //won't ever happen
+      }
       deck.display(0);
       init_menu(deck);
     } catch (NullPointerException err){}
+  }
+  private static void discard(deck deck) {
+  }
+  private static void prob_print(deck deck) {
+  }
+  private static void probability_guess(deck deck) {
   }
   private static void init_menu(deck deck) {
     int select = 0;
@@ -33,11 +41,9 @@ public class CardProbability {
       case 4: break;
     }
   }
-  private static void discard(deck deck) {
+  private static void in_midst_menu(deck deck){
+
   }
-  private static void prob_print(deck deck) {
-  }
-  private static void probability_guess(deck deck) {
-  }
+  private static void final_menu(deck deck){}
 }
 
