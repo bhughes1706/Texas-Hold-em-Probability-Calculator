@@ -9,7 +9,7 @@ class hand {
     total_cards = 0;
     head = null;
   }
-  void add(card to_add){
+  protected void add(card to_add){
     hand[total_cards] = new card(to_add);
     ++total_cards;
   }
@@ -25,13 +25,15 @@ class hand {
     if(head == null) {
       head = new discard(hand[card_select]);
       hand[card_select] = null;
-      --total_cards;
       return 1;
     }
     discard temp = new discard(hand[card_select]);
     temp.next = head;
     head = temp;
-    --total_cards;
+    hand[card_select] = null;
     return 1;
+  }
+  protected void add_after_discard(card temp, int card_select) {
+    hand[card_select] = new card(temp);
   }
 }

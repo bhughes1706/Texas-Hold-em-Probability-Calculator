@@ -32,7 +32,6 @@ public class CardProbability {
       case 1:
         if(!entered[0]){
         deck.discard(0, 0);
-        deck.replace(0, 0);
         entered[0] = true;}
         else
           System.out.println("You've already discarded this position.");
@@ -40,7 +39,6 @@ public class CardProbability {
       case 2:
         if(!entered[1]){
         deck.discard(0, 1);
-        deck.replace(0, 1);
         entered[1] = true;}
         else
           System.out.println("You've already discarded this position.");
@@ -48,7 +46,6 @@ public class CardProbability {
       case 3:
         if(!entered[2]){
         deck.discard(0, 2);
-        deck.replace(0, 2);
         entered[2] = true;}
         else
           System.out.println("You've already discarded this position.");

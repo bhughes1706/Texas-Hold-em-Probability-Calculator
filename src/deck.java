@@ -49,11 +49,6 @@ class deck {
     --deck_size;
     return 1;
   }
-  protected void replace(int hand_number, int card_position) throws NullPointerException {
-    /*if(head == null) return 0;
-    Random rand = new Random();
-    int card_placement = rand.nextInt(deck_size);
-  }*/}
   private card deal_from_deck(int card_placement){
     if(card_placement == 0){
       node temp = head;
@@ -85,6 +80,12 @@ class deck {
     hand[hand_number].display();
   }
   protected int discard(int hand_select, int card_select) {
-    return hand[hand_select].discard(card_select);
+    hand[hand_select].discard(card_select);
+    if(head == null) return 0;
+    Random rand = new Random();
+    int card_placement = rand.nextInt(deck_size);
+    card temp = deal_from_deck(head, card_placement);
+    hand[hand_select].add_after_discard(temp, card_select);
+    return 1;
   }
 }
