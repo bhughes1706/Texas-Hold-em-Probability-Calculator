@@ -183,4 +183,3 @@ public class CardProbability {
     return 2;
   }
 }
-
