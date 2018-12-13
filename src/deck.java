@@ -49,14 +49,6 @@ class deck {
     --deck_size;
     return 1;
   }
-  private card deal_from_deck(int card_placement){
-    if(card_placement == 0){
-      node temp = head;
-      head = temp.next;
-      return temp.card;
-    }
-    return deal_from_deck(head, card_placement);
-  }
   private card deal_from_deck(node head, int card_placement){
     if(head == null)
       return null;
