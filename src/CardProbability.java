@@ -18,7 +18,7 @@ public class CardProbability {
       while(selector >= 0 && selector <= 2) {
         switch (selector) {
           case 0:
-            selector = init_menu(deck); break;
+            selector = init_menu(deck, 0); break;
           case 1:
             selector = in_midst_menu(deck, 0); break;
           case 2:
@@ -92,7 +92,7 @@ public class CardProbability {
   private static void probability_guess(deck deck) {
   }
 
-  private static int init_menu(deck deck) {
+  private static int init_menu(deck deck, int hand_num) {
     int select = 0;
     int discard_helper = 0;
     try {
@@ -122,15 +122,15 @@ public class CardProbability {
         return 1;
       }
       case 4:
+        deck.deal_card(hand_num);
         return 1;
       case 5:
-        return 2;
+        return 3;
     }
-    return 2;
+    return 3;
   }
 
   private static int in_midst_menu(deck deck, int hand_num) {
-    deck.deal_card(hand_num);
     deck.display(hand_num);
     int select = 0;
     try {
@@ -154,6 +154,7 @@ public class CardProbability {
         prob_print(deck);
         return 1;
       case 3:
+        deck.deal_card(hand_num);
         return 2;
       case 4:
         return 3;
@@ -162,7 +163,6 @@ public class CardProbability {
   }
 
   private static int final_menu (deck deck, int hand_num){
-    deck.deal_card(hand_num);
     deck.display(hand_num);
     int select = 0;
     try {

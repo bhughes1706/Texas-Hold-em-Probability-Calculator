@@ -65,8 +65,8 @@ class hand {
     info.high_card = high;
   }
 
-    //checks for pairs and return card_info class
-    // containing how many of a kind and value
+    //checks for pairs and updates card_info variable
+    //updates how many of a kind and value of kind
   protected void of_kind(){
     int counter;
     for(int i = 0; i < total_cards; ++i){
@@ -105,6 +105,8 @@ class hand {
     }
     if(tripwire == 0)
       info.full_house = true;
+    else
+      info.full_house = false;
   }
 
     //evaluates if there is only one suit in hand
@@ -117,6 +119,8 @@ class hand {
     }
     if(count == 0)
       info.flush = true;
+    else
+      info.flush = false;
   }
 
   protected void straight_finder(){
