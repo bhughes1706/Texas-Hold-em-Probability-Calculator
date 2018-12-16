@@ -52,7 +52,7 @@ class deck {
   private card deal_from_deck(node head, int card_placement){
     if(head == null)
       return null;
-    if(card_placement == 1)
+    if(card_placement == 0)
       return remove_card(head);
     return deal_from_deck(head.next, --card_placement);
   }
@@ -79,5 +79,8 @@ class deck {
     card temp = deal_from_deck(head, card_placement);
     hand[hand_select].add_after_discard(temp, card_select);
     return 1;
+  }
+  protected card_info get_info(int hand_num){
+    return hand[hand_num].get_info();
   }
 }

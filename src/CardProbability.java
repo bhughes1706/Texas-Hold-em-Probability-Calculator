@@ -80,6 +80,13 @@ public class CardProbability {
   }
 
   private static void prob_print(deck deck) {
+    card_info temp = new card_info();
+    temp = deck.get_info(0);
+    System.out.println("\nHigh card: " + (temp.high_card+2));
+    System.out.println("Of a kind: " + temp.kind_high);
+    System.out.println("Full House: " + temp.full_house);
+    System.out.println("Flush: " + temp.flush);
+    System.out.println("Straight: " + temp.straight);
   }
 
   private static void probability_guess(deck deck) {
@@ -159,10 +166,10 @@ public class CardProbability {
     deck.display(hand_num);
     int select = 0;
     try {
-      while (select <= 0 || select > 3) {
+      while (select <= 0 || select > 2) {
         System.out.println("\n\nWould you like to:" +
             "\n1) Guess probability of winning hand against" +
-            " generic hand\n2) See probabilities\n3) Quit");
+            " generic hand\n2) Quit");
         Scanner in = new Scanner(System.in);
         select = in.nextInt();
       }
@@ -175,9 +182,6 @@ public class CardProbability {
         probability_guess(deck);
         return 2;
       case 2:
-        prob_print(deck);
-        return 2;
-      case 3:
         return 3;
     }
     return 2;
