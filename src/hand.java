@@ -48,6 +48,7 @@ class hand {
     hand[card_select] = new card(temp);
   }
 
+    //evaluates hand and passes card_info class back to caller
   protected card_info get_info(){
     high_card();
     of_kind();
@@ -56,6 +57,7 @@ class hand {
     return info;
   }
 
+    //adds high card info to card_info class variable
   protected void high_card(){
     int high = 0;
     for(int i = 0; i < total_cards; ++i){
@@ -123,8 +125,37 @@ class hand {
       info.flush = false;
   }
 
+    //evaluates if hand is a current straight
+    //does this by copying hand and bubble sorting(since only max of 5 items)
   protected void straight_finder(){
+    card [] copy_hand = new card[total_cards];
+    for(int i = 0; i < total_cards; ++i)
+      copy_hand[i] = new card(hand[i]);
+    bubble_sort(copy_hand);
+    int straight = 0;
+    for(int j = 0; j < total_cards-1; ++j){
+      if(copy_hand[j].value+1 != copy_hand[j+1].value)
+        ++straight;
+    }
+    if(straight == 0)
+      info.straight = true;
+    else
+      info.straight = false;
+  }
 
+    //sorts hand for straight evaluation
+  protected void bubble_sort(card [] copy_hand){
+    int i, j;
+    card temp;
+    for(i = 0; i < total_cards-1; ++i){
+      for(j = 0; j < total_cards-i-1; ++ j){
+        if(copy_hand[j].value > copy_hand[j+1].value){
+          temp = copy_hand[j];
+          copy_hand[j] = copy_hand[j+1];
+          copy_hand[j+1] = temp;
+        }
+      }
+    }
   }
 }
 
