@@ -71,19 +71,17 @@ class hand {
     //updates how many of a kind and value of kind
   protected void of_kind_finder(){
     int counter;
-    for(int i = 0; i < total_cards; ++i){
+    for(int i = 0; i < total_cards-1; ++i){
       counter = 1;
-      for(int j = 0; j < total_cards; ++j){
-        if(i != j){
-          if(hand[i].value == hand[j].value){
-            ++counter;
-            if(info.kind_high <= counter){
-              if(info.kind_high < counter)
-                info.value_kind_high = hand[i].value;
-              else if(info.value_kind_high < hand[i].value)
-                info.value_kind_high = hand[i].value;
-              info.kind_high = counter;
-            }
+      for(int j = i+1; j < total_cards; ++j){
+        if(hand[i].value == hand[j].value){
+          ++counter;
+          if(info.kind_high <= counter){
+            if(info.kind_high < counter)
+              info.value_kind_high = hand[i].value;
+            else if(info.value_kind_high < hand[i].value)
+              info.value_kind_high = hand[i].value;
+            info.kind_high = counter;
           }
         }
       }
@@ -99,7 +97,7 @@ class hand {
   protected void full_house_finder(){
     int secondary = 0;
     int tripwire = 0;
-    for(int i = 0; i < total_cards-1; ++i){
+    for(int i = 0; i < total_cards; ++i){
       if(hand[i].value != info.kind_high)
         secondary = hand[i].value;
     }
@@ -116,13 +114,11 @@ class hand {
     //if there is 2 kind, checks for another pair
   protected void two_pair_finder(){
     int i, j, count = 0;
-    for(i = 0; i < total_cards; ++i){
+    for(i = 0; i < total_cards-1; ++i){
       count = 0;
-      for(j = 0; j < total_cards; ++j){
-        if(i != j) {
+      for(j = i+1; j < total_cards; ++j){
           if (hand[i].value != info.value_kind_high && hand[i].value == hand[j].value)
             ++count;
-        }
       }
       if(count > 0)
         info.two_pair = true;
