@@ -87,6 +87,7 @@ public class CardProbability {
     System.out.println("Full House: " + temp.full_house);
     System.out.println("Flush: " + temp.flush);
     System.out.println("Straight: " + temp.straight);
+    System.out.println("Two Pairs: " + temp.two_pair);
   }
 
   private static void probability_guess(deck deck) {

@@ -44,15 +44,31 @@ class deck {
     if(head == null) return 0;
     Random rand = new Random();
     int card_placement = rand.nextInt(deck_size);
-    card temp = deal_from_deck(head, card_placement);
+    card temp;
+    if(card_placement == 0)
+      temp = remove_first(head);
+    else
+      temp = deal_from_deck(head, card_placement);
     hand[hand_number].add(temp);
     --deck_size;
     return 1;
   }
+  private card remove_first(node head){
+    card temp;
+    if(head.next == null){
+      temp = head.card;
+      head = null;
+      return temp;
+    }
+    temp = head.card;
+    node temp_node = head.next;
+    head = temp_node;
+    return temp;
+  }
   private card deal_from_deck(node head, int card_placement){
     if(head == null)
       return null;
-    if(card_placement == 0)
+    if(card_placement == 1)
       return remove_card(head);
     return deal_from_deck(head.next, --card_placement);
   }

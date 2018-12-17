@@ -50,15 +50,15 @@ class hand {
 
     //evaluates hand and passes card_info class back to caller
   protected card_info get_info(){
-    high_card();
-    of_kind();
+    high_card_finder();
+    of_kind_finder();
     flush_finder();
     straight_finder();
     return info;
   }
 
     //adds high card info to card_info class variable
-  protected void high_card(){
+  protected void high_card_finder(){
     int high = 0;
     for(int i = 0; i < total_cards; ++i){
       if(hand[i].value > high)
@@ -69,7 +69,7 @@ class hand {
 
     //checks for pairs and updates card_info variable
     //updates how many of a kind and value of kind
-  protected void of_kind(){
+  protected void of_kind_finder(){
     int counter;
     for(int i = 0; i < total_cards; ++i){
       counter = 1;
@@ -90,11 +90,13 @@ class hand {
     }
       //if three of a kind, then checks for full house
     if(info.kind_high == 3)
-      full_house();
+      full_house_finder();
+    if(info.kind_high == 2)
+      two_pair_finder();
   }
 
     //if there is 3 of kind, then checks for full house
-  protected void full_house(){
+  protected void full_house_finder(){
     int secondary = 0;
     int tripwire = 0;
     for(int i = 0; i < total_cards-1; ++i){
@@ -109,6 +111,22 @@ class hand {
       info.full_house = true;
     else
       info.full_house = false;
+  }
+
+    //if there is 2 kind, checks for another pair
+  protected void two_pair_finder(){
+    int i, j, count = 0;
+    for(i = 0; i < total_cards; ++i){
+      count = 0;
+      for(j = 0; j < total_cards; ++j){
+        if(i != j) {
+          if (hand[i].value != info.value_kind_high && hand[i].value == hand[j].value)
+            ++count;
+        }
+      }
+      if(count > 0)
+        info.two_pair = true;
+    }
   }
 
     //evaluates if there is only one suit in hand
@@ -167,6 +185,7 @@ class card_info{
   protected boolean full_house;
   protected boolean flush;
   protected boolean straight;
+  protected boolean two_pair;
 
   protected card_info(){ kind_high = 0; value_kind_high = 0; high_card = 0;
     full_house = false; flush = false; straight = false;
