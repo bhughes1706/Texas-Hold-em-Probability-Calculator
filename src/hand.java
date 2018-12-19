@@ -83,8 +83,9 @@ class hand {
       info.three_kind_odds = 100;
     else if(info.kind_high + (max_cards - total_cards) < 3)
       info.three_kind_odds = 0;
-    else{
-
+    else if(info.kind_high == 2){
+      float total = total_cards * 3 - discard_match_value(head);
+      info.two_kind_odds = total/deck_size;
     }
   }
 
@@ -95,7 +96,7 @@ class hand {
       info.two_kind_odds = 0;
     else{
       float total = total_cards * 3 - discard_match_value(head);
-      info.two_kind_odds = total/deck_size;
+      info.two_kind_odds = total/deck_size*(max_cards-total_cards);
     }
   }
 
