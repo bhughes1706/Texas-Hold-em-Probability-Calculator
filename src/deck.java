@@ -4,14 +4,14 @@ class deck {
   private node head;
   private int deck_size;
   private hand hand[];
-  private int hand_count;
-  private final int max_players = 6;
+  private final int players = 2;
+  private final int user = 0;
+  private final int opponent = 1;
 
   deck(){
     head = null;
     deck_size = 0;
-    hand_count = 0;
-    hand = new hand[max_players];
+    hand = new hand[players];
     }
   protected void init_deck(){ deck_size = build_deck(0); }
   private int build_deck(int suit){
@@ -37,8 +37,8 @@ class deck {
     head = temp;
   }
   void add_hand(){
-    hand[hand_count] = new hand();
-    ++hand_count;
+    hand[user] = new hand();
+    hand[opponent] = new hand();
   }
   protected int deal_card(int hand_number) throws NullPointerException {
     if(head == null) return 0;
@@ -72,6 +72,7 @@ class deck {
       return remove_card(head);
     return deal_from_deck(head.next, --card_placement);
   }
+
   private card remove_card(node head){
     card temp_card = head.next.card;
     if(head.next.next == null){
@@ -83,20 +84,23 @@ class deck {
     head.next = temp_node;
     return temp_card;
   }
-  protected void display(int hand_number){
+
+  protected void display(){
     System.out.println("\nYour hand:");
-    hand[hand_number].display();
+    hand[user].display();
   }
-  protected int discard(int hand_select, int card_select) {
-    hand[hand_select].discard(card_select);
-    if(head == null) return 0;
+
+  protected void discard(int card_select) throws NullPointerException {
+    hand[user].discard(card_select);
+    if(head == null) return;
     Random rand = new Random();
     int card_placement = rand.nextInt(deck_size);
     card temp = deal_from_deck(head, card_placement);
-    hand[hand_select].add_after_discard(temp, card_select);
-    return 1;
+    hand[user].add_after_discard(temp, card_select);
+    --deck_size;
   }
-  protected card_info get_info(int hand_num){
-    return hand[hand_num].get_info();
+
+  protected card_info get_info(){
+    return hand[user].get_info(deck_size);
   }
 }

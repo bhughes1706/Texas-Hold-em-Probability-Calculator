@@ -1,11 +1,12 @@
 class hand {
   private card [] hand;
   private int total_cards;
-  private int max_cards = 5; //for 5 card poker games
   private discard head;
   private card_info info;
+  private int discard_total;
+  private final int max_cards = 5;
 
-    //sets hand array size with max_cards (**can be improved**)
+    //sets hand array size
   hand(){
     hand = new card[max_cards];
     info = new card_info();
@@ -28,18 +29,20 @@ class hand {
   }
 
     //removes card from hand and adds it to the discard class
-  protected int discard(int card_select){
+  protected int discard(int card_select) throws NullPointerException{
     if(total_cards == 0)
       return 0;
     if(head == null) {
       head = new discard(hand[card_select]);
       hand[card_select] = null;
+      ++discard_total;
       return 1;
     }
     discard temp = new discard(hand[card_select]);
     temp.next = head;
     head = temp;
     hand[card_select] = null;
+    ++discard_total;
     return 1;
   }
 
@@ -49,16 +52,68 @@ class hand {
   }
 
     //evaluates hand and passes card_info class back to caller
-  protected card_info get_info(){
+    //passes null if there is no cards in hand
+  protected card_info get_info(int deck_size) {
+    if(total_cards == 0)
+      return null;
     high_card_finder();
     of_kind_finder();
+    full_house_finder();
+    two_pair_finder();
     flush_finder();
     straight_finder();
+
+    find_two_kind_odds(deck_size);
+    find_three_kind_odds(deck_size);
+    find_four_kind_odds(deck_size);
+    find_full_house_odds(deck_size);
+    find_flush_odds(deck_size);
+    find_straight_odds(deck_size);
     return info;
   }
 
-    //adds high card info to card_info class variable
-  protected void high_card_finder(){
+  private void find_straight_odds(int deck_size) {
+  }
+
+  private void find_flush_odds(int deck_size) {
+  }
+
+  private void find_three_kind_odds(int deck_size) {
+    if(info.kind_high > 2)
+      info.three_kind_odds = 100;
+    else if(info.kind_high + (max_cards - total_cards) < 3)
+      info.three_kind_odds = 0;
+    else{
+
+    }
+  }
+
+  private void find_two_kind_odds(int deck_size) {
+    if(info.kind_high > 1)
+      info.two_kind_odds = 100;
+    else if(total_cards == max_cards)
+      info.two_kind_odds = 0;
+    else{
+      float total = total_cards * 3 - discard_match_value(head);
+      info.two_kind_odds = total/deck_size;
+    }
+  }
+
+  private void find_four_kind_odds(int deck_size) {
+    if(info.kind_high > 3)
+      info.four_kind_odds = 100;
+    else if(info.kind_high + (max_cards - total_cards) < 4)
+      info.four_kind_odds = 0;
+    else{
+
+    }
+  }
+
+  private void find_full_house_odds(int deck_size) {
+  }
+
+  //adds high card info to card_info class variable
+  private void high_card_finder(){
     int high = 0;
     for(int i = 0; i < total_cards; ++i){
       if(hand[i].value > high)
@@ -69,7 +124,7 @@ class hand {
 
     //checks for pairs and updates card_info variable
     //updates how many of a kind and value of kind
-  protected void of_kind_finder(){
+  private void of_kind_finder(){
     int counter;
     for(int i = 0; i < total_cards-1; ++i){
       counter = 1;
@@ -86,15 +141,12 @@ class hand {
         }
       }
     }
-      //if three of a kind, then checks for full house
-    if(info.kind_high == 3)
-      full_house_finder();
-    if(info.kind_high == 2)
-      two_pair_finder();
+    if(info.kind_high == 0)
+      info.kind_high = 1;
   }
 
-    //if there is 3 of kind, then checks for full house
-  protected void full_house_finder(){
+  //if there is 3 of kind, then checks for full house
+  private void full_house_finder(){
     int secondary = 0;
     int tripwire = 0;
     for(int i = 0; i < total_cards; ++i){
@@ -112,8 +164,8 @@ class hand {
   }
 
     //if there is 2 kind, checks for another pair
-  protected void two_pair_finder(){
-    int i, j, count = 0;
+  private void two_pair_finder(){
+    int i, j, count;
     for(i = 0; i < total_cards-1; ++i){
       count = 0;
       for(j = i+1; j < total_cards; ++j){
@@ -126,7 +178,7 @@ class hand {
   }
 
     //evaluates if there is only one suit in hand
-  protected void flush_finder(){
+  private void flush_finder(){
     int first = hand[0].suit;
     int count = 0;
     for(int i = 1; i < total_cards; ++i){
@@ -141,7 +193,7 @@ class hand {
 
     //evaluates if hand is a current straight
     //does this by copying hand and bubble sorting(since only max of 5 items)
-  protected void straight_finder(){
+  private void straight_finder(){
     card [] copy_hand = new card[total_cards];
     for(int i = 0; i < total_cards; ++i)
       copy_hand[i] = new card(hand[i]);
@@ -158,7 +210,7 @@ class hand {
   }
 
     //sorts hand for straight evaluation
-  protected void bubble_sort(card [] copy_hand){
+  private void bubble_sort(card [] copy_hand){
     int i, j;
     card temp;
     for(i = 0; i < total_cards-1; ++i){
@@ -171,6 +223,18 @@ class hand {
       }
     }
   }
+
+  private int discard_match_value(discard head){
+    if(head == null)
+      return 0;
+    int counter = 0, i;
+    for(i = 0; i < total_cards; ++i){
+      if(hand[i].value == head.card.value){
+        ++counter;
+      }
+    }
+    return discard_match_value(head.next) + counter;
+  }
 }
 
   //used to store info about hand
@@ -182,6 +246,13 @@ class card_info{
   protected boolean flush;
   protected boolean straight;
   protected boolean two_pair;
+  protected float two_kind_odds;
+  protected float three_kind_odds;
+  protected float four_kind_odds;
+  protected float full_house_odds;
+  protected float flush_odds;
+  protected float straight_odds;
+  protected float two_pair_odds;
 
   protected card_info(){ kind_high = 0; value_kind_high = 0; high_card = 0;
     full_house = false; flush = false; straight = false;

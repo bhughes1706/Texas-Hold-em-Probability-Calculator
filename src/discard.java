@@ -1,6 +1,6 @@
 public class discard {
   protected discard next;
-  private card card;
+  protected card card;
 
   discard(){
     next = null;
