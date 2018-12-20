@@ -1,5 +1,6 @@
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.text.DecimalFormat;
 
 //All functions and menu are for testing purposes at the moment
 //could be improved
@@ -29,6 +30,7 @@ public class CardProbability {
     //just used for testing right now
   private static void prob_print(deck deck) {
     hand_info temp;
+    DecimalFormat df = new DecimalFormat("##.###");
     temp = deck.get_info(0);
     System.out.println("Of a kind: " + temp.kind_high);
     System.out.println("Full House: " + temp.full_house);
@@ -37,8 +39,11 @@ public class CardProbability {
     System.out.println("Two Pairs: " + temp.two_pair);
 
     System.out.println("\nThe probability your hand will include:" +
-        "\nTwo of a kind: " + temp.two_kind_odds + "%" +
-        "\nThree of a kind: " + temp.three_kind_odds + "%");
+        "\nTwo of a kind: " + df.format(temp.two_kind_odds) + "%" +
+        "\nThree of a kind: " + df.format(temp.three_kind_odds) + "%" +
+        "\nFour of a kind: " + df.format(temp.four_kind_odds) + "%" +
+        "\nTwo pairs: " + df.format(temp.two_pair_odds) + "%" +
+        "\nFull house: " + df.format(temp.full_house_odds) + "%");
   }
     //needs implemented
   private static void probability_guess(deck deck) {

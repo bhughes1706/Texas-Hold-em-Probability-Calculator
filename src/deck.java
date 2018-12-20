@@ -139,9 +139,10 @@ class deck {
 
     find_two_kind_odds(eval, hnd);
     find_three_kind_odds(eval, hnd);
-    /*find_four_kind_odds(eval, hnd);
+    find_two_pair_odds(eval, hnd);
+    find_four_kind_odds(eval, hnd);
     find_full_house_odds(eval, hnd);
-    find_flush_odds(eval, hnd);
+    /*find_flush_odds(eval, hnd);
     find_straight_odds(eval, hnd);*/
     return hand[hnd].info;
   }
@@ -249,8 +250,8 @@ class deck {
         hand[hnd].info.straight = true;
     }
   }
-  //sorts hand for straight evaluation
 
+  //sorts hand for straight evaluation
   private void bubble_sort(hand temp){
     int i, j;
     card card;
@@ -271,13 +272,44 @@ class deck {
     else if(eval.total_cards == 7)
       hand[hnd].info.two_kind_odds = 0;
     else{
-      float total = eval.total_cards * 3;
-      int count = 0;
-      hand[hnd].info.two_kind_odds = 0;
-      for(int i = eval.total_cards; i < 7; ++i) {
-        hand[hnd].info.two_kind_odds += 100 * (total / (52 - eval.total_cards - count));
-        ++count;
+      float total;
+      float user_cards = eval.total_cards;
+
+      total =  ((user_cards * 3) / (52 - user_cards));
+      if(user_cards == 5){
+        total = 1 - total;
+        total *= 1 - (((user_cards+1)*3)/(52-user_cards -1));
+        total = 1 - total;
       }
+
+      hand[hnd].info.two_kind_odds = total*100;
+    }
+  }
+
+  private void find_two_pair_odds(hand eval, int hnd){
+    float total;
+    int count;
+    float high = hand[hnd].info.kind_high;
+    float deck = 52 - eval.total_cards;
+
+    if(hand[hnd].info.two_pair)
+      hand[hnd].info.two_pair_odds = 100;
+    else if(high == 1 && 7 - eval.total_cards < 2)
+      hand[hnd].info.two_pair_odds = 0;
+    else if(high > 1){
+      total = ((eval.total_cards - high)*3)/deck;
+      if(eval.total_cards == 5){
+        total = 1 - total;
+        total *= 1 - ((eval.total_cards + 1 - high)/(deck - 1));
+        total = 1 - total;
+      }
+      hand[hnd].info.two_kind_odds = 100*total;
+    }
+    else{
+      hand[hnd].info.two_pair_odds = 0;
+      total = (3*eval.total_cards)/deck;
+      total *= (3*(eval.total_cards-1)/(deck-1));
+      hand[hnd].info.two_pair_odds = (100*total);
     }
   }
 
@@ -285,6 +317,7 @@ class deck {
     float total;
     int count;
     int high = hand[hnd].info.kind_high;
+    float deck = 52 - eval.total_cards;
 
     if(high > 2)
       hand[hnd].info.three_kind_odds = 100;
@@ -292,25 +325,84 @@ class deck {
       hand[hnd].info.three_kind_odds = 0;
     else if(high == 2 && !hand[hnd].info.two_pair){
       count = 0;
-      hand[hnd].info.three_kind_odds = 0;
-      for(int i = eval.total_cards; i < 7; ++i) {
-        total = (2 / (float)(52 - eval.total_cards - count));
-        hand[hnd].info.three_kind_odds += (100*total);
-        ++count;
+      total = 1;
+      total = 2 / deck;
+
+      if(eval.total_cards == 5){
+        total = 1 - total;
+        total *= (1 - (2 / deck));
+        total = 1 - total;
+        float other_total = ((eval.total_cards-2)*3)/deck;
+        other_total *= 1/(deck - 1);
+        total += other_total;
       }
+      hand[hnd].info.three_kind_odds = 100*total;
     }
     else if(hand[hnd].info.two_pair){
-      count = 0;
-      hand[hnd].info.three_kind_odds = 0;
-      for(int i = eval.total_cards; i < 7; ++i) {
-        total = (4 / (float)(deck_size-count));
-        hand[hnd].info.three_kind_odds += (100*total);
+      total = 4/deck;
+      if(eval.total_cards == 5){
+        total = 1 - total;
+        total *= 1 - (4/(deck - 1));
+        total = 1 - total;
+        float other_total = ((eval.total_cards-4)*3)/deck;
+        other_total *= 1/(deck - 1);
+        total += other_total;
       }
+      hand[hnd].info.three_kind_odds = 100*total;
     }
     else{
-      total = (3*eval.total_cards)/(float)(deck_size-eval.total_cards);
-      total *= 1/(float)(deck_size-eval.total_cards-1);
+      total = (3*eval.total_cards)/(deck);
+      total *= 2/(deck - 1);
       hand[hnd].info.three_kind_odds = (100*total);
+    }
+  }
+
+  private void find_four_kind_odds(hand eval, int hnd) {
+    if(hand[hnd].info.kind_high > 3)
+      hand[hnd].info.four_kind_odds = 100;
+    else if(hand[hnd].info.kind_high + (7 - eval.total_cards) < 4)
+      hand[hnd].info.four_kind_odds = 0;
+    else if (hand[hnd].info.kind_high == 2) {
+      float total = 0;
+      total = 2 / ((float) (52 - eval.total_cards));
+      total *= 1 / ((float) (52 - eval.total_cards));
+      hand[hnd].info.four_kind_odds = total*100;
+    }
+    else if(hand[hnd].info.two_pair && eval.total_cards < 6){
+      float total;
+      total = 4/(float)eval.total_cards;
+      total *= 1/(float)eval.total_cards;
+      hand[hnd].info.four_kind_odds = total*100;
+    }
+    else {
+      float total = 1;
+      int count = 0;
+      for(int i = eval.total_cards; i < 7; ++i){
+        total *= 1-((2)/(float)(52-eval.total_cards-count));
+        ++count;
+      }
+      hand[hnd].info.four_kind_odds = 1-(total*100);
+    }
+  }
+
+  private void find_full_house_odds(hand eval, int hnd){
+    int high = hand[hnd].info.kind_high;
+    float total =1;
+    int count = 0;
+    float card_num = eval.total_cards;
+
+    if(high == 1)
+      hand[hnd].info.full_house_odds = 0;
+    else if(hand[hnd].info.full_house)
+      hand[hnd].info.full_house_odds = 100;
+    else if(high == 3){
+      total *= ((card_num - high) * 3) / (52 - card_num);
+      if(card_num == 5) {
+        total = 1 - total;
+        total *= 1 - (((card_num - high + 1) * 3) / (52 - card_num - 1));
+        total = 1 - total;
+      }
+      hand[hnd].info.full_house_odds = total;
     }
   }
 

@@ -41,16 +41,6 @@ class hand {
   private void find_flush_odds(int deck_size) {
   }
 
-  private void find_four_kind_odds(int deck_size) {
-    if(info.kind_high > 3)
-      info.four_kind_odds = 100;
-    else if(info.kind_high + (max_cards - total_cards) < 4)
-      info.four_kind_odds = 0;
-    else{
-
-    }
-  }
-
   private void find_full_house_odds(int deck_size) {
   }
 
