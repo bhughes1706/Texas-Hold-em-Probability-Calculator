@@ -35,24 +35,15 @@ class hand {
     total_cards+=copy.total_cards;
   }
 
-  private void find_straight_odds(int deck_size) {
-  }
-
-  private void find_flush_odds(int deck_size) {
-  }
-
-  private void find_full_house_odds(int deck_size) {
-  }
-
 }
 
   //used to store info about hand
 class hand_info{
-  protected int deck_high;
-  protected int hand_high;
-  protected int kind_high;
-  protected int value_kind_high;
-  protected int value_second_pair;
+  protected int deck_high; //high card on board/kitty
+  protected int hand_high; //high card in player's hand
+  protected int kind_high; //how many of kind there is
+  protected int value_kind_high; //high card in of_kind match
+  protected int value_second_pair; //high card in second of two pair
   protected boolean full_house;
   protected boolean flush;
   protected boolean straight;

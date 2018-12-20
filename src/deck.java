@@ -15,10 +15,13 @@ class deck {
     hand = new hand[players];
   }
 
+    //creates 52 card deck. takes first suit as argument (0)
   protected void init_deck() {
     deck_size = build_deck(0);
   }
 
+    //builds each suit up to 4 by calling build_suit
+    //caller: init_deck  callee: build_deck
   private int build_deck(int suit) {
     int count = 0;
     if (suit == 4)
@@ -27,6 +30,8 @@ class deck {
     return build_deck(suit + 1) + count;
   }
 
+    //builds each card in suit, up to 13
+    //caller: build_deck  callee: add
   private int build_suit(int suit, int value) {
     if (value == 13)
       return 0;
@@ -34,6 +39,7 @@ class deck {
     return build_suit(suit, value + 1) + 1;
   }
 
+    //adds each card built to LLL, caller: build_suit
   private void add(int suit, int value) {
     if (head == null) {
       head = new node(suit, value);
@@ -44,12 +50,14 @@ class deck {
     head = temp;
   }
 
+    //builds dealer hand by creating 5 card slots, and adds 3
   protected void add_dealer() {
     dealer = new hand(5);
     for (int i = 0; i < 3; ++i)
       deal_card(3);
   }
 
+    //builds user hand by creating 2 cards to 2 empty slots
   void add_user() {
     hand[user] = new hand(2);
     hand[opponent] = new hand(2);
@@ -57,6 +65,8 @@ class deck {
       deal_card(user);
   }
 
+    //deals one card to hand, 0 hand_number is user
+    //3 or higher will deal to dealer's hand
   protected int deal_card(int hand_number) throws NullPointerException {
     if (head == null) return 0;
     Random rand = new Random();
@@ -78,6 +88,7 @@ class deck {
     return 0;
   }
 
+    //if head is removed, this function will be called
   private card remove_first(node head) {
     card temp;
     if (head.next == null) {
@@ -91,6 +102,7 @@ class deck {
     return temp;
   }
 
+    //function traverses through LLL to find card_placement
   private card deal_from_deck(node head, int card_placement) {
     if (head == null)
       return null;
@@ -99,6 +111,7 @@ class deck {
     return deal_from_deck(head.next, --card_placement);
   }
 
+    //removes card (only if it's not first card
   private card remove_card(node head) {
     card temp_card = head.next.card;
     if (head.next.next == null) {
@@ -111,6 +124,7 @@ class deck {
     return temp_card;
   }
 
+    //display's user's and dealer's cards
   protected void display() {
     System.out.print("\nYour hand:");
     hand[user].display();
@@ -122,13 +136,15 @@ class deck {
   //evaluates hand and passes card_info class back to caller
   //passes null if there is no cards in hand
   protected hand_info get_info(int hnd) {
+    //creates combined hand with user's and dealer's hand
     hand eval = new hand(7);
-    eval.to_copy(hand[hnd]);
-    eval.to_copy(dealer);
+    eval.to_copy(hand[hnd]); //copies user's hand
+    eval.to_copy(dealer); //copies dealer's hand
 
     if (eval.total_cards == 0)
       return null;
 
+    //the below evaluates hand for each of the following conditions.
     high_card_finder(hnd);
     of_kind_finder(eval, hnd);
     full_house_finder(eval, hnd);
@@ -136,7 +152,7 @@ class deck {
     flush_finder(eval, hnd);
     straight_finder(eval, hnd);
 
-
+    //uses found conditions to calculate odds for each of below
     find_two_kind_odds(eval, hnd);
     find_three_kind_odds(eval, hnd);
     find_two_pair_odds(eval, hnd);
@@ -144,7 +160,7 @@ class deck {
     find_full_house_odds(eval, hnd);
     /*find_flush_odds(eval, hnd);
     find_straight_odds(eval, hnd);*/
-    return hand[hnd].info;
+    return hand[hnd].info; //returns to main
   }
 
   //adds high card info to card_info class variable
@@ -251,7 +267,7 @@ class deck {
     }
   }
 
-  //sorts hand for straight evaluation
+  //sorts hand for straight_finder evaluation
   private void bubble_sort(hand temp){
     int i, j;
     card card;
@@ -281,7 +297,6 @@ class deck {
         total *= 1 - (((user_cards+1)*3)/(52-user_cards -1));
         total = 1 - total;
       }
-
       hand[hnd].info.two_kind_odds = total*100;
     }
   }
@@ -300,10 +315,10 @@ class deck {
       total = ((eval.total_cards - high)*3)/deck;
       if(eval.total_cards == 5){
         total = 1 - total;
-        total *= 1 - ((eval.total_cards + 1 - high)/(deck - 1));
+        total *= (1 - (((eval.total_cards + 1 - high)*3)/(deck - 1)));
         total = 1 - total;
       }
-      hand[hnd].info.two_kind_odds = 100*total;
+      hand[hnd].info.two_pair_odds = 100*total;
     }
     else{
       hand[hnd].info.two_pair_odds = 0;
@@ -345,7 +360,7 @@ class deck {
         total *= 1 - (4/(deck - 1));
         total = 1 - total;
         float other_total = ((eval.total_cards-4)*3)/deck;
-        other_total *= 1/(deck - 1);
+        other_total *= 2/(deck - 1);
         total += other_total;
       }
       hand[hnd].info.three_kind_odds = 100*total;
@@ -390,20 +405,47 @@ class deck {
     float total =1;
     int count = 0;
     float card_num = eval.total_cards;
+    float deck = 52 - eval.total_cards;
 
     if(high == 1)
       hand[hnd].info.full_house_odds = 0;
     else if(hand[hnd].info.full_house)
       hand[hnd].info.full_house_odds = 100;
     else if(high == 3){
-      total *= ((card_num - high) * 3) / (52 - card_num);
+      total *= ((card_num - high) * 3) / (deck);
       if(card_num == 5) {
         total = 1 - total;
-        total *= 1 - (((card_num - high + 1) * 3) / (52 - card_num - 1));
+        total *= 1 - (((card_num - high + 1) * 3) / (deck - 1));
         total = 1 - total;
       }
-      hand[hnd].info.full_house_odds = total;
+      hand[hnd].info.full_house_odds = 100*total;
     }
+    else if(hand[hnd].info.two_pair){
+      total = 4/deck;
+      if(card_num == 5){
+        total = 1 - total;
+        total *= 1 - (4/(deck - 1));
+        total = 1 - total;
+        float other = ((eval.total_cards-4)*3)/deck;
+        other *= 2 / (deck - 1);
+        total += other;
+      }
+      hand[hnd].info.full_house_odds = 100*total;
+    }
+    else if(high == 2 && card_num == 5){
+      total = (card_num - high)*3 / deck;
+      total *= 2/(deck - 1);
+      float other_total = 2/deck;
+      other_total *= (card_num - high)*3 / (deck-1);
+      total += other_total;
+      hand[hnd].info.full_house_odds = 100*total;
+    }
+  }
+
+  private void find_straight_odds(int deck_size) {
+  }
+
+  private void find_flush_odds(int deck_size) {
   }
 
   private double combo(int top, int bottom){
@@ -416,4 +458,5 @@ class deck {
     if (number <= 1) return 1;
     else return number * factorial(number - 1);
   }
+
 }
