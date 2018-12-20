@@ -122,27 +122,27 @@ class deck {
   //evaluates hand and passes card_info class back to caller
   //passes null if there is no cards in hand
   protected hand_info get_info(int hnd) {
-    hand temp = new hand(7);
-    temp.to_copy(hand[hnd]);
-    temp.to_copy(dealer);
+    hand eval = new hand(7);
+    eval.to_copy(hand[hnd]);
+    eval.to_copy(dealer);
 
-    if (temp.total_cards == 0)
+    if (eval.total_cards == 0)
       return null;
 
     high_card_finder(hnd);
-    of_kind_finder(temp, hnd);
-    full_house_finder(temp, hnd);
-    two_pair_finder(temp, hnd);
-    flush_finder(temp, hnd);
-    straight_finder(temp, hnd);
+    of_kind_finder(eval, hnd);
+    full_house_finder(eval, hnd);
+    two_pair_finder(eval, hnd);
+    flush_finder(eval, hnd);
+    straight_finder(eval, hnd);
 
-    /*
-    find_two_kind_odds(temp, hnd);
-    find_three_kind_odds(temp, hnd);
-    find_four_kind_odds(temp, hnd);
-    find_full_house_odds(temp, hnd);
-    find_flush_odds(temp, hnd);
-    find_straight_odds(temp, hnd);*/
+
+    find_two_kind_odds(eval, hnd);
+    find_three_kind_odds(eval, hnd);
+    /*find_four_kind_odds(eval, hnd);
+    find_full_house_odds(eval, hnd);
+    find_flush_odds(eval, hnd);
+    find_straight_odds(eval, hnd);*/
     return hand[hnd].info;
   }
 
@@ -163,18 +163,18 @@ class deck {
 
   //checks for pairs and updates card_info variable
   //updates how many of a kind and value of kind
-  private void of_kind_finder(hand temp, int hnd) {
+  private void of_kind_finder(hand eval, int hnd) {
     int counter;
-    for (int i = 0; i < temp.total_cards - 1; ++i) {
+    for (int i = 0; i < eval.total_cards - 1; ++i) {
       counter = 1;
-      for (int j = i + 1; j < temp.total_cards; ++j) {
-        if (temp.card[i].value == temp.card[j].value) {
+      for (int j = i + 1; j < eval.total_cards; ++j) {
+        if (eval.card[i].value == eval.card[j].value) {
           ++counter;
           if (hand[hnd].info.kind_high <= counter) {
             if (hand[hnd].info.kind_high < counter)
-              hand[hnd].info.value_kind_high = temp.card[i].value;
-            else if (hand[hnd].info.value_kind_high < temp.card[i].value)
-              hand[hnd].info.value_kind_high = temp.card[i].value;
+              hand[hnd].info.value_kind_high = eval.card[i].value;
+            else if (hand[hnd].info.value_kind_high < eval.card[i].value)
+              hand[hnd].info.value_kind_high = eval.card[i].value;
             hand[hnd].info.kind_high = counter;
           }
         }
@@ -185,15 +185,15 @@ class deck {
   }
 
   //if there is 3 of kind, then checks for full house
-  private void full_house_finder(hand temp, int hnd) {
+  private void full_house_finder(hand eval, int hnd) {
     if (hand[hnd].info.kind_high < 3)
       return;
     int tripwire = 0;
     int high = hand[hnd].info.value_kind_high;
-    for (int i = 0; i < temp.total_cards - 1; ++i) {
-      if (temp.card[i].value != high)
-        for (int j = i + 1; j < temp.total_cards; ++j) {
-          if (temp.card[j].value != high && temp.card[j] == temp.card[i])
+    for (int i = 0; i < eval.total_cards - 1; ++i) {
+      if (eval.card[i].value != high)
+        for (int j = i + 1; j < eval.total_cards; ++j) {
+          if (eval.card[j].value != high && eval.card[j] == eval.card[i])
             ++tripwire;
         }
       if (tripwire == 1)
@@ -202,18 +202,18 @@ class deck {
   }
 
   //if there is 2 kind, checks for another pair
-  private void two_pair_finder(hand temp, int hnd) {
+  private void two_pair_finder(hand eval, int hnd) {
     if (hand[hnd].info.kind_high < 2)
       return;
     int i, j, count;
-    for (i = 0; i < temp.total_cards - 1; ++i) {
+    for (i = 0; i < eval.total_cards - 1; ++i) {
       count = 0;
       int high = hand[hnd].info.value_kind_high;
-      if (temp.card[i].value != high) {
-        for (j = i + 1; j < temp.total_cards; ++j) {
-          if (temp.card[j].value != high && temp.card[i].value == temp.card[j].value) {
+      if (eval.card[i].value != high) {
+        for (j = i + 1; j < eval.total_cards; ++j) {
+          if (eval.card[j].value != high && eval.card[i].value == eval.card[j].value) {
             ++count;
-            hand[hnd].info.value_second_pair = temp.card[i].value;
+            hand[hnd].info.value_second_pair = eval.card[i].value;
             hand[hnd].info.two_pair = true;
           }
         }
@@ -222,12 +222,12 @@ class deck {
   }
 
   //evaluates if there is only one suit in hand
-  private void flush_finder(hand temp, int hnd) {
+  private void flush_finder(hand eval, int hnd) {
     int count;
-    for (int i = 0; i < temp.total_cards - 1; ++i) {
+    for (int i = 0; i < eval.total_cards - 1; ++i) {
       count = 1;
-      for (int j = i + 1; j < temp.total_cards; ++j) {
-        if (temp.card[i].suit == temp.card[j].suit)
+      for (int j = i + 1; j < eval.total_cards; ++j) {
+        if (eval.card[i].suit == eval.card[j].suit)
           ++count;
       }
     if(count > 4)
@@ -237,15 +237,15 @@ class deck {
 
   //evaluates if hand is a current straight
   //does this by copying hand and bubble sorting(since only max of 5 items)
-  private void straight_finder(hand temp, int hnd){
-    bubble_sort(temp);
+  private void straight_finder(hand eval, int hnd){
+    bubble_sort(eval);
     int straight = 1;
-    for(int j = 0; j < temp.total_cards-1; ++j) {
-      if (temp.card[j].value + 1 != temp.card[j + 1].value)
+    for(int j = 0; j < eval.total_cards-1; ++j) {
+      if(eval.card[j].value + 1 == eval.card[j + 1].value)
         ++straight;
       else
         straight = 1;
-      if (straight > 4)
+      if(straight > 4)
         hand[hnd].info.straight = true;
     }
   }
@@ -265,5 +265,63 @@ class deck {
     }
   }
 
+  private void find_two_kind_odds(hand eval, int hnd) {
+    if(hand[hnd].info.kind_high > 1)
+      hand[hnd].info.two_kind_odds = 100;
+    else if(eval.total_cards == 7)
+      hand[hnd].info.two_kind_odds = 0;
+    else{
+      float total = eval.total_cards * 3;
+      int count = 0;
+      hand[hnd].info.two_kind_odds = 0;
+      for(int i = eval.total_cards; i < 7; ++i) {
+        hand[hnd].info.two_kind_odds += 100 * (total / (52 - eval.total_cards - count));
+        ++count;
+      }
+    }
+  }
 
+  private void find_three_kind_odds(hand eval, int hnd) {
+    float total;
+    int count;
+    int high = hand[hnd].info.kind_high;
+
+    if(high > 2)
+      hand[hnd].info.three_kind_odds = 100;
+    else if(high + 7 - eval.total_cards < 3)
+      hand[hnd].info.three_kind_odds = 0;
+    else if(high == 2 && !hand[hnd].info.two_pair){
+      count = 0;
+      hand[hnd].info.three_kind_odds = 0;
+      for(int i = eval.total_cards; i < 7; ++i) {
+        total = (2 / (float)(52 - eval.total_cards - count));
+        hand[hnd].info.three_kind_odds += (100*total);
+        ++count;
+      }
+    }
+    else if(hand[hnd].info.two_pair){
+      count = 0;
+      hand[hnd].info.three_kind_odds = 0;
+      for(int i = eval.total_cards; i < 7; ++i) {
+        total = (4 / (float)(deck_size-count));
+        hand[hnd].info.three_kind_odds += (100*total);
+      }
+    }
+    else{
+      total = (3*eval.total_cards)/(float)(deck_size-eval.total_cards);
+      total *= 1/(float)(deck_size-eval.total_cards-1);
+      hand[hnd].info.three_kind_odds = (100*total);
+    }
+  }
+
+  private double combo(int top, int bottom){
+    if(top == 0 || bottom == 0)
+      return 0;
+    return factorial(top)/(factorial(top-bottom)*factorial(bottom));
+  }
+
+  private double factorial(int number){
+    if (number <= 1) return 1;
+    else return number * factorial(number - 1);
+  }
 }

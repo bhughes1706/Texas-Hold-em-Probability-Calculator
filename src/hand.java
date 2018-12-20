@@ -26,6 +26,8 @@ class hand {
     }
   }
 
+    //for copying into evaluation hand, which is used for
+    //combining dealer and user into one hand for evaluating
   protected void to_copy(hand copy){
     for(int i = total_cards; i < copy.total_cards+total_cards; ++i){
       card[i] = new card(copy.card[i-total_cards]);
@@ -37,49 +39,6 @@ class hand {
   }
 
   private void find_flush_odds(int deck_size) {
-  }
-
-  private void find_three_kind_odds(int deck_size) {
-    double total;
-    if(info.kind_high > 2)
-      info.three_kind_odds = 100;
-    else if(info.kind_high + (max_cards - total_cards) < 3)
-      info.three_kind_odds = 0;
-    else if(info.kind_high == 2 && !info.two_pair){
-      total = 2/(float)deck_size;
-      info.three_kind_odds = (float)(100*(total*(max_cards-total_cards)));
-    }
-    else if(info.two_pair){
-      total = 4/(float)deck_size;
-      info.three_kind_odds = (float)(100*(total*(max_cards-total_cards)));
-    }
-    else{
-      double odds = combo(13,1)*combo(4,2);
-      odds /= combo(47,2);
-      info.three_kind_odds = 100*(float)odds;
-    }
-  }
-
-  private double combo(int top, int bottom){
-    if(top == 0 || bottom == 0)
-      return 0;
-    return factorial(top)/(factorial(top-bottom)*factorial(bottom));
-  }
-
-  private double factorial(int number){
-    if (number <= 1) return 1;
-    else return number * factorial(number - 1);
-  }
-
-  private void find_two_kind_odds(int deck_size) {
-    if(info.kind_high > 1)
-      info.two_kind_odds = 100;
-    else if(total_cards == max_cards)
-      info.two_kind_odds = 0;
-    else{
-      float total = total_cards * 3;
-      info.two_kind_odds = 100*((total/deck_size)*(max_cards-total_cards));
-    }
   }
 
   private void find_four_kind_odds(int deck_size) {
