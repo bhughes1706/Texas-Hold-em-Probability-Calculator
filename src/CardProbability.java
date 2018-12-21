@@ -37,13 +37,19 @@ public class CardProbability {
     System.out.println("Flush: " + temp.flush);
     System.out.println("Straight: " + temp.straight);
     System.out.println("Two Pairs: " + temp.two_pair);
+    System.out.println("Flush total: " + temp.flush_total);
+    System.out.println("Flush high: " + temp.flush_high);
+    for(int i = 0; i < 13; ++i)
+      System.out.println("Card " + i + ": " + temp.straight_opportunities[i]);
 
     System.out.println("\nThe probability your hand will include:" +
         "\nTwo of a kind: " + df.format(temp.two_kind_odds) + "%" +
         "\nThree of a kind: " + df.format(temp.three_kind_odds) + "%" +
         "\nFour of a kind: " + df.format(temp.four_kind_odds) + "%" +
         "\nTwo pairs: " + df.format(temp.two_pair_odds) + "%" +
-        "\nFull house: " + df.format(temp.full_house_odds) + "%");
+        "\nFull house: " + df.format(temp.full_house_odds) + "%" +
+        "\nAny Flush: " + df.format(temp.flush_odds) + "%" +
+        "\nStraight: " + df.format(temp.straight_odds) + "%");
   }
     //needs implemented
   private static void probability_guess(deck deck) {

@@ -158,8 +158,8 @@ class deck {
     find_two_pair_odds(eval, hnd);
     find_four_kind_odds(eval, hnd);
     find_full_house_odds(eval, hnd);
-    /*find_flush_odds(eval, hnd);
-    find_straight_odds(eval, hnd);*/
+    find_flush_odds(eval, hnd);
+    find_straight_odds(eval, hnd);
     return hand[hnd].info; //returns to main
   }
 
@@ -239,47 +239,65 @@ class deck {
   }
 
   //evaluates if there is only one suit in hand
+  //and finds largest suit amount, and largest card in that total
   private void flush_finder(hand eval, int hnd) {
     int count;
+    int high;
+    hand[hnd].info.flush_high = 0;
+    hand[hnd].info.flush_total = 0;
+
     for (int i = 0; i < eval.total_cards - 1; ++i) {
       count = 1;
+      high = 0;
       for (int j = i + 1; j < eval.total_cards; ++j) {
-        if (eval.card[i].suit == eval.card[j].suit)
+        if (eval.card[i].suit == eval.card[j].suit) {
           ++count;
+          if(eval.card[i].value > eval.card[j].value) {
+            if(high < eval.card[i].value)
+              high = eval.card[i].value;
+          }
+          else {
+            if(high < eval.card[j].value)
+              high = eval.card[j].value;
+          }
+        }
       }
-    if(count > 4)
-      hand[hnd].info.flush = true;
+      if(count > hand[hnd].info.flush_total){
+        hand[hnd].info.flush_total = count;
+        hand[hnd].info.flush_high = high + 2;
+      }
+      if(count > 4)
+        hand[hnd].info.flush = true;
     }
   }
 
   //evaluates if hand is a current straight
   //does this by copying hand and bubble sorting(since only max of 5 items)
   private void straight_finder(hand eval, int hnd){
-    bubble_sort(eval);
-    int straight = 1;
-    for(int j = 0; j < eval.total_cards-1; ++j) {
-      if(eval.card[j].value + 1 == eval.card[j + 1].value)
-        ++straight;
-      else
-        straight = 1;
-      if(straight > 4)
-        hand[hnd].info.straight = true;
-    }
-  }
-
-  //sorts hand for straight_finder evaluation
-  private void bubble_sort(hand temp){
-    int i, j;
-    card card;
-    for(i = 0; i < temp.total_cards-1; ++i){
-      for(j = 0; j < temp.total_cards-i-1; ++ j){
-        if(temp.card[j].value > temp.card[j+1].value){
-          card = temp.card[j];
-          temp.card[j] = temp.card[j+1];
-          temp.card[j+1] = card;
+    boolean [] straight_array = new boolean[13];
+    int [] needed = new int[13];
+    int count;
+    for(int i = 0; i < eval.total_cards; ++i)
+      straight_array[eval.card[i].value] = true;
+    for(int j = 0; j < 9; ++j){
+      count = 0;
+      for(int k = 0; k < 5; ++k){
+        if(straight_array[j+k]) {
+          ++count;
+        }
+        if(count == 5) {
+          hand[hnd].info.straight_odds = 100;
+          hand[hnd].info.straight = true;
+        }
+        else if(count >= (eval.total_cards-2)){
+          for(int l = 0; l < 5; ++l){
+            if(!straight_array[j+l] && count > needed[j+l])
+              needed[j+l] = count;
+          }
         }
       }
     }
+    hand[hnd].info.straight_opportunities = needed;
   }
 
   private void find_two_kind_odds(hand eval, int hnd) {
@@ -373,30 +391,39 @@ class deck {
   }
 
   private void find_four_kind_odds(hand eval, int hnd) {
+    float total;
+    float deck = 52 - eval.total_cards;
     if(hand[hnd].info.kind_high > 3)
       hand[hnd].info.four_kind_odds = 100;
     else if(hand[hnd].info.kind_high + (7 - eval.total_cards) < 4)
       hand[hnd].info.four_kind_odds = 0;
     else if (hand[hnd].info.kind_high == 2) {
-      float total = 0;
-      total = 2 / ((float) (52 - eval.total_cards));
-      total *= 1 / ((float) (52 - eval.total_cards));
+      total = 2 / deck;
+      total *= 1 / deck;
       hand[hnd].info.four_kind_odds = total*100;
     }
     else if(hand[hnd].info.two_pair && eval.total_cards < 6){
-      float total;
-      total = 4/(float)eval.total_cards;
-      total *= 1/(float)eval.total_cards;
+      total = 4/deck;
+      total *= 1/deck;
       hand[hnd].info.four_kind_odds = total*100;
     }
+    else if(hand[hnd].info.kind_high == 3){
+      total = 1/deck;
+      if(eval.total_cards == 5){
+        total = 1 - total;
+        total *= 1 - (1/(deck - 1));
+        total = 1 - total;
+      }
+      hand[hnd].info.four_kind_odds = total;
+    }
     else {
-      float total = 1;
+      total = 1;
       int count = 0;
       for(int i = eval.total_cards; i < 7; ++i){
         total *= 1-((2)/(float)(52-eval.total_cards-count));
         ++count;
       }
-      hand[hnd].info.four_kind_odds = 1-(total*100);
+      hand[hnd].info.four_kind_odds = (1-total)*100;
     }
   }
 
@@ -442,10 +469,55 @@ class deck {
     }
   }
 
-  private void find_straight_odds(int deck_size) {
+  private void find_straight_odds(hand eval, int hnd) {
+    int fours = 0;
+    int threes = 0;
+
+    if(hand[hnd].info.straight)
+      hand[hnd].info.straight_odds = 100;
+    else{
+      float total;
+      float deck = 52 - eval.total_cards;
+      for(int i = 0; i < 13; ++i) {
+        if (hand[hnd].info.straight_opportunities[i] == 3)
+          ++threes;
+        if (hand[hnd].info.straight_opportunities[i] == 4)
+          ++fours;
+      }
+      if(threes == 0 && fours == 0)
+        hand[hnd].info.straight_odds = 0;
+      else if(eval.total_cards == 6){
+        total = (fours*4)/deck;
+        hand[hnd].info.straight_odds = total*100;
+      }
+
+    }
   }
 
-  private void find_flush_odds(int deck_size) {
+  private void find_flush_odds(hand eval, int hnd) {
+    float total;
+    int cards = eval.total_cards;
+    float flush_number = hand[hnd].info.flush_total;
+
+    if(hand[hnd].info.flush)
+      hand[hnd].info.flush_odds = 100;
+    else if(flush_number + (7 - cards) < 5)
+      hand[hnd].info.flush_odds = 0;
+    else if(flush_number == 3){
+      total = (13 - flush_number)/(52 - cards);
+      total *= (13 - flush_number - 1) / (52 - cards - 1);
+      hand[hnd].info.flush_odds = total*100;
+    }
+    else if(flush_number == 4){
+      total = (13 - flush_number) / (52 - cards);
+      if(cards == 5){
+        total = 1 - total;
+        total *= 1 - ((13 - flush_number) / (52 - cards - 1));
+        total = 1 - total;
+      }
+      hand[hnd].info.flush_odds = total*100;
+    }
+
   }
 
   private double combo(int top, int bottom){

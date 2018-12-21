@@ -44,6 +44,9 @@ class hand_info{
   protected int kind_high; //how many of kind there is
   protected int value_kind_high; //high card in of_kind match
   protected int value_second_pair; //high card in second of two pair
+  protected int flush_high;
+  protected int flush_total;
+  protected int [] straight_opportunities;
   protected boolean full_house;
   protected boolean flush;
   protected boolean straight;
@@ -56,7 +59,9 @@ class hand_info{
   protected float straight_odds;
   protected float two_pair_odds;
 
+
   protected hand_info(){ kind_high = 0; value_kind_high = 0; hand_high = 0;
     full_house = false; flush = false; straight = false;
+    straight_opportunities = new int[13];
   }
 }
