@@ -57,6 +57,7 @@ class deck {
       deal_card(3);
   }
 
+  //adds empty opponent hand
   protected void add_opponent(){
     hand[opponent] = new hand(2);
   }
@@ -71,19 +72,25 @@ class deck {
   //deals one card to hand, 0 hand_number is user
   //3 or higher will deal to dealer's hand
   protected int deal_card(int hand_number) throws NullPointerException {
+      //if deck is empty -- shouldn't ever happen
     if (head == null) return 0;
-    Random rand = new Random();
+    Random rand = new Random(); //gets random card placement
     int card_placement = rand.nextInt(deck_size);
     card temp;
+      //if head is needed
     if (card_placement == 0)
       temp = remove_first(head);
+      //if any other card is needed
     else
       temp = deal_from_deck(head, card_placement);
+      //if hand is opponent or user
     if (hand_number < 3)
       hand[hand_number].add(temp);
+      //if dealing to dealer
     else {
       dealer.add(temp);
       --deck_size;
+        //if dealer has full hand
       if (dealer.total_cards == dealer.max_cards)
         return 1;
     }
@@ -100,8 +107,7 @@ class deck {
       return temp;
     }
     temp = head.card;
-    node temp_node = head.next;
-    this.head = temp_node;
+    this.head = head.next;
     return temp;
   }
 
@@ -137,9 +143,9 @@ class deck {
   }
 
   /*
-    evaluates hand and passes card_info class back to caller
+    evaluates hand and passes card_info class back to caller,
     passes null if there is no cards in hand -- Uses the below
-    functions to finder specific conditions in hand. Most loop
+    functions to find specific conditions in hand. Most loop
     through the hand and check conditions. straight finder is
     the most robust algorithm, the rest are fairly simple.
   */
@@ -523,6 +529,8 @@ class deck {
 
     if(high == 1)
       hand[hnd].info.full_house_odds = 0;
+    else if(!hand[hnd].info.two_pair && high < 3 && card_num == 6)
+      hand[hnd].info.full_house_odds = 0;
     else if(hand[hnd].info.full_house)
       hand[hnd].info.full_house_odds = 100;
     else if(high == 3){
@@ -534,18 +542,13 @@ class deck {
       }
       hand[hnd].info.full_house_odds = 100*total;
     }
-    else if(hand[hnd].info.two_pair){
-      total = 4/deck;
-      if(card_num == 5){
-        total = 1 - total;
-        total *= 1 - (4/(deck - 1));
-        total = 1 - total;
-        float other = ((eval.total_cards-4)*3)/deck;
-        other *= 2 / (deck - 1);
-        total += other;
-      }
-      hand[hnd].info.full_house_odds = 100*total;
+      //will be the same as three_kind_odds
+    else if(hand[hnd].info.two_pair) {
+      if (hand[hnd].info.three_kind_odds == 0)
+        find_three_kind_odds(eval, hnd);
+      hand[hnd].info.full_house_odds = hand[hnd].info.three_kind_odds;
     }
+
     else if(high == 2 && card_num == 5){
       total = (card_num - high)*3 / deck;
       total *= 2/(deck - 1);
@@ -638,6 +641,11 @@ class deck {
 
   }
 
+  /*
+    Used for initial probabilities of specific hands
+    before cards are dealt. Could be hard coded, but
+    was done this way for practice
+   */
   private double combo(int top, int bottom){
     if(top == 0 || bottom == 0)
       return 0;
