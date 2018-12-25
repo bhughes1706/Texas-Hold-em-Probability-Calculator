@@ -57,10 +57,13 @@ class deck {
       deal_card(3);
   }
 
-    //builds user hand by creating 2 cards to 2 empty slots
-  void add_user() {
-    hand[user] = new hand(2);
+  protected void add_opponent(){
     hand[opponent] = new hand(2);
+  }
+
+    //builds user hand by creating 2 cards to 2 empty slots
+  protected void add_user() {
+    hand[user] = new hand(2);
     for (int i = 0; i < 2; ++i)
       deal_card(user);
   }
@@ -93,12 +96,12 @@ class deck {
     card temp;
     if (head.next == null) {
       temp = head.card;
-      head = null;
+      this.head = null;
       return temp;
     }
     temp = head.card;
     node temp_node = head.next;
-    head = temp_node;
+    this.head = temp_node;
     return temp;
   }
 
@@ -276,23 +279,62 @@ class deck {
   private void straight_finder(hand eval, int hnd){
     boolean [] straight_array = new boolean[13];
     int [] needed = new int[13];
+    int total_cards = eval.total_cards;
     int count;
-    for(int i = 0; i < eval.total_cards; ++i)
+    int i,j,k, l;
+    for(i = 0; i < total_cards; ++i)
       straight_array[eval.card[i].value] = true;
-    for(int j = 0; j < 9; ++j){
+    for(j = 0; j < 9; ++j){
       count = 0;
-      for(int k = 0; k < 5; ++k){
+      for(k = 0; k < 5; ++k){
         if(straight_array[j+k]) {
           ++count;
         }
         if(count == 5) {
-          hand[hnd].info.straight_odds = 100;
           hand[hnd].info.straight = true;
+          break;
         }
-        else if(count >= (eval.total_cards-2)){
-          for(int l = 0; l < 5; ++l){
-            if(!straight_array[j+l] && count > needed[j+l])
+        else if(count >= (total_cards-2)){
+          for(l = 0; l < 5; ++l){
+            if(!straight_array[j+l] && count > needed[j+l]){
               needed[j+l] = count;
+            }
+          }
+        }
+      }
+    }
+    if(total_cards == 5) {
+      int right = 0;
+      int left = 0;
+      int fours = 0;
+      for (i = 0; i < 13; ++i){
+        if(needed[i] == 4){
+          ++fours;
+          for(j = 0; j < i; ++j){
+            if(needed[j] == 3)
+              ++left;
+          }
+          for(k = i+1; k < 13; ++k){
+            if(needed[k] == 3)
+              ++right;
+          }
+          if((left > 0 && right == left) || fours > 1){
+            for(j = 0; j < 13; ++j){
+              if(needed[j] == 3)
+                needed[j] = 0;
+            }
+          }
+          else if(left < right){
+            for(l = 0; l < i; ++l){
+              if(needed[l] == 3)
+                needed[l] = 0;
+            }
+          }
+          else if(right < left){
+            for(l = i+1; l < 13; ++l){
+              if(needed[l] == 3)
+                needed[l] = 0;
+            }
           }
         }
       }
@@ -475,6 +517,7 @@ class deck {
 
     if(hand[hnd].info.straight)
       hand[hnd].info.straight_odds = 100;
+
     else{
       float total;
       float deck = 52 - eval.total_cards;
@@ -484,13 +527,43 @@ class deck {
         if (hand[hnd].info.straight_opportunities[i] == 4)
           ++fours;
       }
-      if(threes == 0 && fours == 0)
+
+      if(threes == 0 && fours == 0){
         hand[hnd].info.straight_odds = 0;
-      else if(eval.total_cards == 6){
+        return;
+      }
+
+      if(eval.total_cards == 6){
         total = (fours*4)/deck;
         hand[hnd].info.straight_odds = total*100;
       }
 
+      else if(eval.total_cards == 5){
+        total = 1 - ((fours*4)/deck);
+        total *= 1 - ((fours*4)/(deck-1));
+        hand[hnd].info.straight_odds = 100*(1 - total);
+
+
+        if(threes > 0){
+          float other_total;
+          float another_total;
+
+          if(threes % 2 == 0){
+            other_total = (threes*4)/deck;
+            other_total *= (4 + (threes - 2))/(deck - 1);
+          }
+
+          else{
+            other_total = ((threes - 2) * 4) / deck;
+            other_total *= (threes - 1) * 4 / (deck - 1);
+            another_total = (threes - 1) * 4 / deck;
+            another_total *= (threes -2) * 4 / (deck - 1);
+            other_total += another_total;
+          }
+
+          hand[hnd].info.straight_odds += other_total * 100;
+        }
+      }
     }
   }
 

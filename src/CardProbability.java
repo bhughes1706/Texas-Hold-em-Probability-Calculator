@@ -9,9 +9,12 @@ public class CardProbability {
     System.out.println("\nThis is a program that trains the user to determine the " +
         "\nprobability that their cards will beat a generic hand.");
     deck deck = new deck();
+
+
     try {
       deck.init_deck();
       deck.add_user();
+      deck.add_opponent();
       deck.add_dealer();
       int selector = 0;
       while (selector == 0 || selector == 1) {
@@ -19,7 +22,7 @@ public class CardProbability {
           case 0:
             selector = init_menu(deck); break;
           case 1:
-              selector = final_menu(deck); break;
+            selector = final_menu(deck); break;
           }
         }
     } catch(NullPointerException err) {
@@ -30,7 +33,7 @@ public class CardProbability {
     //just used for testing right now
   private static void prob_print(deck deck) {
     hand_info temp;
-    DecimalFormat df = new DecimalFormat("##.###");
+    DecimalFormat df = new DecimalFormat("##.##");
     temp = deck.get_info(0);
     System.out.println("Of a kind: " + temp.kind_high);
     System.out.println("Full House: " + temp.full_house);
@@ -50,7 +53,11 @@ public class CardProbability {
         "\nFull house: " + df.format(temp.full_house_odds) + "%" +
         "\nAny Flush: " + df.format(temp.flush_odds) + "%" +
         "\nStraight: " + df.format(temp.straight_odds) + "%");
+
+    //System.out.println("\nThe probability your hand will beat a random hand: " +
+    //    df.format(temp.random_hand) + "%");
   }
+
     //needs implemented
   private static void probability_guess(deck deck) {
   }
