@@ -1,3 +1,8 @@
+/*
+  This class only holds the numerical value and suit of card
+  value is 0 - 12. Add 2 for actual value and account for face cards
+ */
+
 public class card {
   protected int value;
   protected int suit;
@@ -12,6 +17,8 @@ public class card {
   }
   protected void display() {
     System.out.print(" The " );
+
+    // 9 + 2 = 11, which is the Jack. Default case is numbered card.
     switch(value){
       case 9: System.out.print("Jack "); break;
       case 10: System.out.print("Queen"); break;
@@ -19,6 +26,7 @@ public class card {
       case 12: System.out.print("Ace"); break;
       default: System.out.print((value + 2)); break;
     }
+
     switch(suit){
       case 0: System.out.print(" of Hearts"); break;
       case 1: System.out.print(" of Diamonds"); break;

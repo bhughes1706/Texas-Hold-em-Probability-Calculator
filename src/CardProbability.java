@@ -10,7 +10,6 @@ public class CardProbability {
         "\nprobability that their cards will beat a generic hand.");
     deck deck = new deck();
 
-
     try {
       deck.init_deck();
       deck.add_user();
@@ -62,6 +61,7 @@ public class CardProbability {
   private static void probability_guess(deck deck) {
   }
 
+    //menu available mid-hand
   private static int init_menu(deck deck) {
     int select = 0;
     deck.display();
@@ -93,9 +93,11 @@ public class CardProbability {
     return 3;
   }
 
+    //removes options that were available mid-hand
   private static int final_menu (deck deck){
     deck.display();
     int select = 0;
+
     try {
       while (select <= 0 || select > 2) {
         System.out.println("\n\nWould you like to:" +
@@ -108,6 +110,7 @@ public class CardProbability {
       System.out.println("\nPlease enter correct data type.");
       return 0;
     }
+
     switch(select){
       case 1:
         probability_guess(deck);
@@ -115,6 +118,7 @@ public class CardProbability {
       case 2:
         return 3;
     }
+
     return 2;
   }
 }

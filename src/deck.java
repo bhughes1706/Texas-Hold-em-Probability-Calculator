@@ -15,13 +15,13 @@ class deck {
     hand = new hand[players];
   }
 
-    //creates 52 card deck. takes first suit as argument (0)
+  //creates 52 card deck. takes first suit as argument (0)
   protected void init_deck() {
     deck_size = build_deck(0);
   }
 
-    //builds each suit up to 4 by calling build_suit
-    //caller: init_deck  callee: build_deck
+  //builds each suit up to 4 by calling build_suit
+  // caller: init_deck  callee: build_deck
   private int build_deck(int suit) {
     int count = 0;
     if (suit == 4)
@@ -30,8 +30,8 @@ class deck {
     return build_deck(suit + 1) + count;
   }
 
-    //builds each card in suit, up to 13
-    //caller: build_deck  callee: add
+  //builds each card in suit, up to 13
+  // caller: build_deck  callee: add
   private int build_suit(int suit, int value) {
     if (value == 13)
       return 0;
@@ -39,7 +39,7 @@ class deck {
     return build_suit(suit, value + 1) + 1;
   }
 
-    //adds each card built to LLL, caller: build_suit
+  //adds each card built to LLL, caller: build_suit
   private void add(int suit, int value) {
     if (head == null) {
       head = new node(suit, value);
@@ -50,7 +50,7 @@ class deck {
     head = temp;
   }
 
-    //builds dealer hand by creating 5 card slots, and adds 3
+  //builds dealer hand by creating 5 card slots, and adds 3
   protected void add_dealer() {
     dealer = new hand(5);
     for (int i = 0; i < 3; ++i)
@@ -61,15 +61,15 @@ class deck {
     hand[opponent] = new hand(2);
   }
 
-    //builds user hand by creating 2 cards to 2 empty slots
+  //builds user hand by creating 2 cards to 2 empty slots
   protected void add_user() {
     hand[user] = new hand(2);
     for (int i = 0; i < 2; ++i)
       deal_card(user);
   }
 
-    //deals one card to hand, 0 hand_number is user
-    //3 or higher will deal to dealer's hand
+  //deals one card to hand, 0 hand_number is user
+  //3 or higher will deal to dealer's hand
   protected int deal_card(int hand_number) throws NullPointerException {
     if (head == null) return 0;
     Random rand = new Random();
@@ -91,7 +91,7 @@ class deck {
     return 0;
   }
 
-    //if head is removed, this function will be called
+  //if head is removed, this function will be called
   private card remove_first(node head) {
     card temp;
     if (head.next == null) {
@@ -105,7 +105,7 @@ class deck {
     return temp;
   }
 
-    //function traverses through LLL to find card_placement
+  //function traverses through LLL to find card_placement
   private card deal_from_deck(node head, int card_placement) {
     if (head == null)
       return null;
@@ -114,7 +114,7 @@ class deck {
     return deal_from_deck(head.next, --card_placement);
   }
 
-    //removes card (only if it's not first card
+  //removes card (only if it's not first card
   private card remove_card(node head) {
     card temp_card = head.next.card;
     if (head.next.next == null) {
@@ -127,7 +127,7 @@ class deck {
     return temp_card;
   }
 
-    //display's user's and dealer's cards
+  //display's user's and dealer's cards
   protected void display() {
     System.out.print("\nYour hand:");
     hand[user].display();
@@ -136,8 +136,13 @@ class deck {
     dealer.display();
   }
 
-  //evaluates hand and passes card_info class back to caller
-  //passes null if there is no cards in hand
+  /*
+    evaluates hand and passes card_info class back to caller
+    passes null if there is no cards in hand -- Uses the below
+    functions to finder specific conditions in hand. Most loop
+    through the hand and check conditions. straight finder is
+    the most robust algorithm, the rest are fairly simple.
+  */
   protected hand_info get_info(int hnd) {
     //creates combined hand with user's and dealer's hand
     hand eval = new hand(7);
@@ -166,7 +171,6 @@ class deck {
     return hand[hnd].info; //returns to main
   }
 
-  //adds high card info to card_info class variable
   private void high_card_finder(int hnd) {
     int high = 0;
     for (int i = 0; i < hand[hnd].total_cards; ++i) {
@@ -181,8 +185,6 @@ class deck {
     hand[hnd].info.deck_high = high;
   }
 
-  //checks for pairs and updates card_info variable
-  //updates how many of a kind and value of kind
   private void of_kind_finder(hand eval, int hnd) {
     int counter;
     for (int i = 0; i < eval.total_cards - 1; ++i) {
@@ -204,7 +206,6 @@ class deck {
       hand[hnd].info.kind_high = 1;
   }
 
-  //if there is 3 of kind, then checks for full house
   private void full_house_finder(hand eval, int hnd) {
     if (hand[hnd].info.kind_high < 3)
       return;
@@ -221,7 +222,6 @@ class deck {
     }
   }
 
-  //if there is 2 kind, checks for another pair
   private void two_pair_finder(hand eval, int hnd) {
     if (hand[hnd].info.kind_high < 2)
       return;
@@ -241,8 +241,6 @@ class deck {
     }
   }
 
-  //evaluates if there is only one suit in hand
-  //and finds largest suit amount, and largest card in that total
   private void flush_finder(hand eval, int hnd) {
     int count;
     int high;
@@ -274,26 +272,40 @@ class deck {
     }
   }
 
-  //evaluates if hand is a current straight
-  //does this by copying hand and bubble sorting(since only max of 5 items)
   private void straight_finder(hand eval, int hnd){
+    //holds possible straights and which cards are needed for straight
+    //find_straight_odds fill out the array for each card
+
+      //creates array to hold current card values
     boolean [] straight_array = new boolean[13];
+      //where cards are needed for a possible straight
     int [] needed = new int[13];
     int total_cards = eval.total_cards;
     int count;
     int i,j,k, l;
+
+      //find where all the cards are
     for(i = 0; i < total_cards; ++i)
       straight_array[eval.card[i].value] = true;
+
+      //evaluates each five card chunk for possible straights
+      //if two cards are to be dealt, then needs four in five
+      //if one card left to deal then needs four in five
+      //achieved by: count >= (total_cards - 2)
     for(j = 0; j < 9; ++j){
       count = 0;
+        //runs forward through five positions and counts cards
       for(k = 0; k < 5; ++k){
         if(straight_array[j+k]) {
           ++count;
         }
+          //if there is a straight
         if(count == 5) {
           hand[hnd].info.straight = true;
-          break;
+          break; //no reason to continue
         }
+          //if there is cards needed to make straight and it's possible with
+          //remaining number of cards to be dealt
         else if(count >= (total_cards-2)){
           for(l = 0; l < 5; ++l){
             if(!straight_array[j+l] && count > needed[j+l]){
@@ -303,33 +315,56 @@ class deck {
         }
       }
     }
+
+      /* a very specific problem arises with the above algorithm when total_cards is 5
+         0 4 0 0 0 0 4 0 .. 0 -- 5,6,7,8 in hand, needing only 4 or 9
+         the above algorithm will evaluate to:
+         3 4 0 0 0 0 4 3 0 .. 0
+         Therefore, even numbers of 3's on each side of one 4 need to be removed
+         OR if there are two 4's, then eliminate all 3's no matter what
+         0 0 0 4 0 0 0 3 3 .. 0 -- 3,4,6,7,9 in hand, needing 5, OR: 10, Jack
+         the above algorithm will evaluate to
+         3 0 0 4 0 0 3 0 3 .. 0
+         Therefore, the smaller quantity of 3's on one side of the 4 need to
+         be removed (when non-equal) - while the larger quantity stays
+      */
     if(total_cards == 5) {
       int right = 0;
       int left = 0;
       int fours = 0;
-      for (i = 0; i < 13; ++i){
+
+        //checks for 4's in needed array. No need to check end values (0, 12)
+      for (i = 1; i < 12; ++i){
+          //counts the number of fours
         if(needed[i] == 4){
           ++fours;
+            //counts 3's to the left of the 4
           for(j = 0; j < i; ++j){
             if(needed[j] == 3)
               ++left;
           }
+            //counts 3's to the right of the 4
           for(k = i+1; k < 13; ++k){
             if(needed[k] == 3)
               ++right;
           }
+            //if left and right are non-zero and equal OR
+            // if there are multiple 4's
           if((left > 0 && right == left) || fours > 1){
             for(j = 0; j < 13; ++j){
+                //eliminates all 3's
               if(needed[j] == 3)
                 needed[j] = 0;
             }
           }
+            //right is larger, so eliminate all left 3's
           else if(left < right){
             for(l = 0; l < i; ++l){
               if(needed[l] == 3)
                 needed[l] = 0;
             }
           }
+            //left is larger so eliminate all right 3's
           else if(right < left){
             for(l = i+1; l < 13; ++l){
               if(needed[l] == 3)
@@ -339,25 +374,35 @@ class deck {
         }
       }
     }
+      //copies total evaluation into hand_info object
     hand[hnd].info.straight_opportunities = needed;
   }
 
+  /*
+    The following use the above finder functions' data to evaluate
+    the to probability of specific events. All use simple
+    statistical modeling.
+   */
   private void find_two_kind_odds(hand eval, int hnd) {
+      //if there already is two of a kind
     if(hand[hnd].info.kind_high > 1)
       hand[hnd].info.two_kind_odds = 100;
+      //if no two of a kind and no more cards will be dealt
     else if(eval.total_cards == 7)
       hand[hnd].info.two_kind_odds = 0;
+      //if no two kind and cards to be dealt
     else{
-      float total;
-      float user_cards = eval.total_cards;
+      float total;  //float for input into card info
+      float user_cards = eval.total_cards;  //local variable for repeat use
 
-      total =  ((user_cards * 3) / (52 - user_cards));
-      if(user_cards == 5){
-        total = 1 - total;
+      total =  ((user_cards * 3) / (52 - user_cards)); // simple probability
+      if(user_cards == 5){ //adds prob of getting match on dealers last two cards
+        total = 1 - total; //prob it won't happen
+          //multiplied by prob it won't happen again
         total *= 1 - (((user_cards+1)*3)/(52-user_cards -1));
-        total = 1 - total;
+        total = 1 - total; //inverse of previous total
       }
-      hand[hnd].info.two_kind_odds = total*100;
+      hand[hnd].info.two_kind_odds = total*100; //times 100 for readability
     }
   }
 
