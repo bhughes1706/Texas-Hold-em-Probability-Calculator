@@ -6,16 +6,15 @@ import java.text.DecimalFormat;
 //could be improved
 public class CardProbability {
   public static void main(String[] args) {
-    System.out.println("\nThis is a program that trains the user to determine the " +
-        "\nprobability that their cards will beat a generic hand.");
+    int selector = 1;
+    while(selector == 1)
+      selector = welcome();
     deck deck = new deck();
 
     try {
       deck.init_deck();
       deck.add_user();
       deck.add_opponent();
-      deck.add_dealer();
-      int selector = 0;
       while (selector == 0 || selector == 1) {
         switch (selector) {
           case 0:
@@ -27,6 +26,22 @@ public class CardProbability {
     } catch(NullPointerException err) {
       err.printStackTrace();
     }
+  }
+
+  public static void init_odds(){
+    InitProbabilities init = new InitProbabilities();
+    DecimalFormat df = new DecimalFormat("##.###");
+    System.out.println(
+        "\nRoyal flush odds: " + df.format(init.royal_flush) + "%"
+      + "\nStraight flush odds: " + df.format(init.straight_flush) + "%"
+      + "\nFour of a kind odds: " + df.format(init.four_kind) + "%"
+      + "\nFull house odds: " + df.format(init.full_house) + "%"
+      + "\nFlush odds: " + df.format(init.flush) + "%"
+      + "\nStraight odds: " + df.format(init.straight) + "%"
+      + "\nThree of a kind odds: " + df.format(init.three_kind) + "%"
+      + "\nTwo pair odds: " + df.format(init.two_pair) + "%"
+      + "\nOne pair odds: " + df.format(init.one_pair) + "%"
+    );
   }
 
     //just used for testing right now
@@ -61,6 +76,32 @@ public class CardProbability {
   private static void probability_guess(deck deck) {
   }
 
+  private static int welcome() {
+    Scanner in = new Scanner(System.in);
+    int selector = 0;
+    System.out.println("\nWelcome to Texas Hold'em training. " +
+        "\nThis program will train you to recognize probabilities in all situations" +
+        "\nLet's start with an easy one: ");
+    try {
+      System.out.println("\nWould you like to:" +
+          "\n1) See initial probabilities of all hand types" +
+          "\n2) Deal cards" +
+          "\n3) Quit");
+      selector = in.nextInt();
+      switch (selector) {
+        case 1:
+          init_odds();
+          return 1;
+        case 2:
+          return 0;
+      }
+    } catch (InputMismatchException error) {
+      System.out.println("\nPlease enter correct data type.");
+      return 1;
+    }
+    return 2;
+  }
+
     //menu available mid-hand
   private static int init_menu(deck deck) {
     int select = 0;
@@ -86,7 +127,7 @@ public class CardProbability {
         prob_print(deck);
         return 0;
       case 3:
-        return deck.deal_card(3);
+        deck.deal_card(3);
       case 4:
         return 3;
     }

@@ -137,9 +137,10 @@ class deck {
   protected void display() {
     System.out.print("\nYour hand:");
     hand[user].display();
-
-    System.out.print("\n\nDealer's hand: ");
-    dealer.display();
+    if (dealer != null){
+      System.out.print("\n\nDealer's hand: ");
+      dealer.display();
+    }
   }
 
   /*
@@ -152,8 +153,10 @@ class deck {
   protected hand_info get_info(int hnd) {
     //creates combined hand with user's and dealer's hand
     hand eval = new hand(7);
-    eval.to_copy(hand[hnd]); //copies user's hand
-    eval.to_copy(dealer); //copies dealer's hand
+    if(hand[hnd] != null)
+      eval.to_copy(hand[hnd]); //copies user's hand
+    if(dealer != null)
+      eval.to_copy(dealer); //copies dealer's hand
 
     if (eval.total_cards == 0)
       return null;
@@ -184,9 +187,11 @@ class deck {
         high = hand[hnd].card[i].value;
     }
     hand[hnd].info.hand_high = high;
-    for (int j = 0; j < dealer.total_cards; ++j) {
-      if (dealer.card[j].value > high)
-        high = dealer.card[j].value;
+    if(dealer != null) {
+      for (int j = 0; j < dealer.total_cards; ++j) {
+        if (dealer.card[j].value > high)
+          high = dealer.card[j].value;
+      }
     }
     hand[hnd].info.deck_high = high;
   }
@@ -390,16 +395,19 @@ class deck {
     statistical modeling.
    */
   private void find_two_kind_odds(hand eval, int hnd) {
+    float user_cards = eval.total_cards;  //local variable for repeat use
       //if there already is two of a kind
     if(hand[hnd].info.kind_high > 1)
       hand[hnd].info.two_kind_odds = 100;
+    else if(user_cards == 2){
+
+    }
       //if no two of a kind and no more cards will be dealt
     else if(eval.total_cards == 7)
       hand[hnd].info.two_kind_odds = 0;
       //if no two kind and cards to be dealt
     else{
       float total;  //float for input into card info
-      float user_cards = eval.total_cards;  //local variable for repeat use
 
       total =  ((user_cards * 3) / (52 - user_cards)); // simple probability
       if(user_cards == 5){ //adds prob of getting match on dealers last two cards
@@ -407,6 +415,9 @@ class deck {
           //multiplied by prob it won't happen again
         total *= 1 - (((user_cards+1)*3)/(52-user_cards -1));
         total = 1 - total; //inverse of previous total
+        float other = ((13 - user_cards)*4) / (52 - user_cards);
+        other *= 3 / (52 - user_cards - 1);
+        total += other;
       }
       hand[hnd].info.two_kind_odds = total*100; //times 100 for readability
     }
@@ -640,21 +651,4 @@ class deck {
     }
 
   }
-
-  /*
-    Used for initial probabilities of specific hands
-    before cards are dealt. Could be hard coded, but
-    was done this way for practice
-   */
-  private double combo(int top, int bottom){
-    if(top == 0 || bottom == 0)
-      return 0;
-    return factorial(top)/(factorial(top-bottom)*factorial(bottom));
-  }
-
-  private double factorial(int number){
-    if (number <= 1) return 1;
-    else return number * factorial(number - 1);
-  }
-
 }
