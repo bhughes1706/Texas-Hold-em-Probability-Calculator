@@ -10,7 +10,7 @@ class InitProbabilities {
 
   http://pi.math.cornell.edu/~mec/2006-2007/Probability/Texasholdem.pdf
   http://mathforum.org/library/drmath/view/65306.html
-  were both used as reference and for some initial guidance
+  were both used as reference and for initial guidance
   */
 
   double full_house;
@@ -103,7 +103,7 @@ class InitProbabilities {
     double third_total = combo(4,3)*13;
     third_total *= combo(4,2)*12;
     third_total *= combo(11,2)*16;
-
+      //add, divide by all possible hands
     double total = first_total + next_total + third_total;
     total = total/(combo(52,7));
     return total*100;

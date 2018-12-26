@@ -7,8 +7,11 @@ import java.text.DecimalFormat;
 public class CardProbability {
   public static void main(String[] args) {
     int selector = 1;
+    System.out.println("\nWelcome to Texas Hold'em training. " +
+        "\nThis program will train you to recognize probabilities in all situations" +
+        "\nLet's start with an easy one: ");
     while(selector == 1)
-      selector = welcome();
+      selector = init_menu();
     deck deck = new deck();
 
     try {
@@ -18,7 +21,8 @@ public class CardProbability {
       while (selector == 0 || selector == 1) {
         switch (selector) {
           case 0:
-            selector = init_menu(deck); break;
+            selector = in_midst_menu(deck);
+            break;
           case 1:
             selector = final_menu(deck); break;
           }
@@ -47,8 +51,8 @@ public class CardProbability {
     //just used for testing right now
   private static void prob_print(deck deck) {
     hand_info temp;
-    DecimalFormat df = new DecimalFormat("##.##");
     temp = deck.get_info(0);
+    DecimalFormat df = new DecimalFormat("##.##");
     System.out.println("Of a kind: " + temp.kind_high);
     System.out.println("Full House: " + temp.full_house);
     System.out.println("Flush: " + temp.flush);
@@ -76,12 +80,9 @@ public class CardProbability {
   private static void probability_guess(deck deck) {
   }
 
-  private static int welcome() {
+  private static int init_menu() {
     Scanner in = new Scanner(System.in);
     int selector = 0;
-    System.out.println("\nWelcome to Texas Hold'em training. " +
-        "\nThis program will train you to recognize probabilities in all situations" +
-        "\nLet's start with an easy one: ");
     try {
       System.out.println("\nWould you like to:" +
           "\n1) See initial probabilities of all hand types" +
@@ -103,7 +104,7 @@ public class CardProbability {
   }
 
     //menu available mid-hand
-  private static int init_menu(deck deck) {
+  private static int in_midst_menu(deck deck) {
     int select = 0;
     deck.display();
     try {
@@ -111,7 +112,7 @@ public class CardProbability {
         System.out.println("\n\nWould you like to:" +
             "\n1) Guess probability of winning hand against" +
             " random hand\n2) See probabilities of different hands" +
-            "\n3) Deal another card\n4) Quit");
+            "\n3) Deal cards\n4) Quit");
         Scanner in = new Scanner(System.in);
         select = in.nextInt();
       }
@@ -127,7 +128,17 @@ public class CardProbability {
         prob_print(deck);
         return 0;
       case 3:
-        deck.deal_card(3);
+        if(deck.dealer_number() == 0){
+          deck.add_dealer();
+          return 0;
+        }
+        else {
+          deck.deal_card(3);
+          if (deck.dealer_number() == 5)
+            return 1;
+          else
+            return 0;
+        }
       case 4:
         return 3;
     }

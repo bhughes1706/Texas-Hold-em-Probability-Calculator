@@ -143,6 +143,15 @@ class deck {
     }
   }
 
+    //used to determine how many cards to deal,
+    //or if any cards have been dealt to dealer
+  public int dealer_number() {
+    if(dealer != null)
+      return dealer.total_cards();
+    else
+      return 0;
+  }
+
   /*
     evaluates hand and passes card_info class back to caller,
     passes null if there is no cards in hand -- Uses the below

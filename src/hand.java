@@ -38,6 +38,10 @@ class hand {
     }
     total_cards+=copy.total_cards;
   }
+
+  public int total_cards() {
+    return total_cards;
+  }
 }
 
   //used to store info about hand
