@@ -484,8 +484,8 @@ class deck {
         if (to_deal > 3)
           other_total *= combo(13 - current_ranks - 1, to_deal - 3)
               * pow(4, to_deal - 3);
+        total += other_total;
       }
-      total += other_total;
       other_total = 0;
     }
 
@@ -494,17 +494,19 @@ class deck {
       int temp_ranks = current_ranks;
       if (high > 1)
         --temp_ranks;
-      if (temp_ranks != 0)
+      if (temp_ranks != 0) {
         other_total = 3 * temp_ranks * combo(temp_ranks, 2);
-      if (to_deal > 2)
-        other_total *= combo(13 - current_ranks, to_deal - 2) * pow(4, to_deal - 2);
-      total += other_total;
+        if (to_deal > 2)
+          other_total *= combo(13 - current_ranks, to_deal - 2) * pow(4, to_deal - 2);
+        total += other_total;
+      }
       other_total = 0;
 
       //Case 3.3.1: one pair of two_pair is in hand
       if (high > 1) {
         other_total += combo(4, 2) * (13 - current_ranks);
-        other_total *= combo(13 - current_ranks, to_deal - 2) * pow(4, to_deal - 2);
+        if(to_deal > 2)
+          other_total *= combo(13 - current_ranks - 1, to_deal - 2) * pow(4, to_deal - 2);
         total += other_total;
       }
     }
@@ -512,12 +514,14 @@ class deck {
     //Case 3.4: one pair and one card of two_pair in hand
     if(to_deal >= 1 && high > 1){
       --current_ranks;
-      other_total = pow(3,current_ranks);
-      if(to_deal > 1){
-        other_total *= combo(13-current_ranks+1, to_deal-1)
-            * pow(4,to_deal-1);
+      if(current_ranks != 0) {
+        other_total = pow(3, current_ranks);
+        if (to_deal > 1) {
+          other_total *= combo(13 - current_ranks + 1, to_deal - 1)
+              * pow(4, to_deal - 1);
+        }
+        total += other_total;
       }
-      total += other_total;
     }
 
     total /= combo(deck,to_deal);
@@ -722,6 +726,7 @@ class deck {
     float card_num = eval.total_cards;
     float deck = 52 - eval.total_cards;
 
+    /*
     if(high == 1)
       hand[hnd].info.full_house_odds = 0;
     else if(!hand[hnd].info.two_pair && high < 3 && card_num == 6)
@@ -752,6 +757,7 @@ class deck {
       total += other_total;
       hand[hnd].info.full_house_odds = 100*total;
     }
+    */
   }
 
   private void find_straight_odds(hand eval, int hnd) {
