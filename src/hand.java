@@ -46,7 +46,7 @@ class hand {
 
   //used to store info about hand
 class hand_info{
-  protected int deck_high; //high card on board/kitty
+  protected int deck_high; //high card for dealer
   protected int hand_high; //high card in player's hand
   protected int kind_high; //how many of kind there is
   protected int value_kind_high; //high card in of_kind match

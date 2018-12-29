@@ -36,15 +36,16 @@ public class CardProbability {
     InitProbabilities init = new InitProbabilities();
     DecimalFormat df = new DecimalFormat("##.###");
     System.out.println(
-        "\nRoyal flush odds: " + df.format(init.royal_flush) + "%"
-      + "\nStraight flush odds: " + df.format(init.straight_flush) + "%"
-      + "\nFour of a kind odds: " + df.format(init.four_kind) + "%"
-      + "\nFull house odds: " + df.format(init.full_house) + "%"
-      + "\nFlush odds: " + df.format(init.flush) + "%"
-      + "\nStraight odds: " + df.format(init.straight) + "%"
-      + "\nThree of a kind odds: " + df.format(init.three_kind) + "%"
-      + "\nTwo pair odds: " + df.format(init.two_pair) + "%"
-      + "\nOne pair odds: " + df.format(init.one_pair) + "%"
+        "\nProbability you'll get exactly a:"
+      + "\nRoyal flush: " + df.format(init.royal_flush) + "%"
+      + "\nStraight flush: " + df.format(init.straight_flush) + "%"
+      + "\nFour of a kind: " + df.format(init.four_kind) + "%"
+      + "\nFull house: " + df.format(init.full_house) + "%"
+      + "\nFlush: " + df.format(init.flush) + "%"
+      + "\nStraight: " + df.format(init.straight) + "%"
+      + "\nThree of a kind: " + df.format(init.three_kind) + "%"
+      + "\nTwo pair: " + df.format(init.two_pair) + "%"
+      + "\nOne pair: " + df.format(init.one_pair) + "%"
     );
   }
 

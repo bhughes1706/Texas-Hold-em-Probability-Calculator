@@ -38,7 +38,7 @@ class InitProbabilities {
   private double two_pair_odds(){
     double total;
     total = (combo(13,5) -10) * 10;
-    total *= (6*62 + 24*63 + 6*64);
+    total *= (6*62 + 24*63 + 6*64); //get one pair
     total += combo(13,3)*(pow(combo(4,2), 3))*40;
     return 100*(total/combo(52,7));
   }
