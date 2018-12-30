@@ -68,13 +68,13 @@ class hand_info{
   protected boolean two_pair;
 
   //found by calling find_x_odds functions
-  protected float two_kind_odds;
-  protected float three_kind_odds;
-  protected float four_kind_odds;
-  protected float full_house_odds;
-  protected float flush_odds;
-  protected float straight_odds;
-  protected float two_pair_odds;
+  protected double two_kind_odds;
+  protected double three_kind_odds;
+  protected double four_kind_odds;
+  protected double full_house_odds;
+  protected double flush_odds;
+  protected double straight_odds;
+  protected double two_pair_odds;
 
     //initializes array to proper value
   protected hand_info(){

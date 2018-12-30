@@ -296,6 +296,8 @@ class deck {
   private void straight_finder(hand eval, int hnd){
     //holds possible straights and which cards are needed for straight
     //find_straight_odds fill out the array for each card
+    if(eval.total_cards == 2)
+      return;
 
       //creates array to hold current card values
     boolean [] straight_array = new boolean[13];
@@ -404,6 +406,7 @@ class deck {
     the to probability of specific events. All use simple
     statistical modeling.
    */
+
   private void find_two_kind_odds(hand eval, int hnd) {
     //CASE 1: already two of kind
     //CASE 2: possible
@@ -419,24 +422,31 @@ class deck {
     int user_cards = eval.total_cards;
     int to_deal = 7 - eval.total_cards;
     double total = 0;
+    double other_total = 0;
 
     //Case 2.1
     if(to_deal > 1) {
-      double other_total = (13 - user_cards) * combo(4, 2);
+      other_total = (13 - user_cards) * combo(4, 2);
       if(to_deal > 2)
         other_total *= combo(13 - user_cards - 1, to_deal - 2) * pow(4, to_deal - 2);
       total += other_total;
     }
     //Case 2.2
-      total += user_cards*3*combo(13-user_cards,to_deal-1)*pow(4,to_deal-1);
+      other_total = user_cards * 3;
+    if(to_deal > 1) {
+      other_total *= combo(13 - user_cards, to_deal - 1) * pow(4, to_deal - 1);
+    }
+    total += other_total;
+
 
     //Divide by all possible hands
     total /= combo(52 - user_cards,to_deal);
 
-    hand[hnd].info.two_kind_odds = 100*(float)total;
+    hand[hnd].info.two_kind_odds = 100*total;
   }
 
-  private void find_two_pair_odds(hand eval, int hnd){
+  //this is correct
+  private void find_two_pair_odds(hand eval, int hnd) {
     //CASE 1: already two_pair
     //CASE 2: not possible
     //CASE 3: possible
@@ -459,8 +469,10 @@ class deck {
     int to_deal = 7 - user_total;
     int current_ranks = user_total;
 
-    if(high > 1)
-      current_ranks -= high + 1;
+    if(high > 1) {
+      current_ranks -= high;
+      ++current_ranks;
+    }
 
     //Case 3.1: two pair are not current ranks in hand
     if(to_deal >= 4){
@@ -509,6 +521,7 @@ class deck {
           other_total *= combo(13 - current_ranks - 1, to_deal - 2) * pow(4, to_deal - 2);
         total += other_total;
       }
+      other_total = 0;
     }
 
     //Case 3.4: one pair and one card of two_pair in hand
@@ -525,9 +538,10 @@ class deck {
     }
 
     total /= combo(deck,to_deal);
-    hand[hnd].info.two_pair_odds = 100 * (float)total;
+    hand[hnd].info.two_pair_odds = 100 * total;
   }
 
+  //pretty sure this is correct
   private void find_three_kind_odds(hand eval, int hnd) {
     //CASE 1: already three of kind
     //CASE 2: three of a kind not possible
@@ -560,7 +574,7 @@ class deck {
       ++two_pair;
     }
     else if(high > 1)
-      total_ranks -= (high+1);
+      total_ranks -= high - 1;
 
     //odds of getting three not matching in hand at moment
     if(to_deal > 2) {
@@ -595,9 +609,10 @@ class deck {
       total += high * combo(12, to_deal - 1) * pow(4, to_deal - 1);
     }
     total /= combo(deck, to_deal);
-    hand[hnd].info.three_kind_odds = 100*(float)total;
+    hand[hnd].info.three_kind_odds = 100*total;
   }
 
+  //this is correct
   private void find_four_kind_odds(hand eval, int hnd) {
     /*CASE 1: already is four_kind
       CASE 2: no possibility of four_kind
@@ -699,9 +714,10 @@ class deck {
       //total will have all viable four_kind hands
       //divides by all possible hands
       total /= combo(deck, to_deal);
-      hand[hnd].info.four_kind_odds = 100*(float)total;
+      hand[hnd].info.four_kind_odds = 100*total;
   }
 
+  //pretty sure this is correct
   private void find_full_house_odds(hand eval, int hnd){
     //CASE 1: already two_pair
     //CASE 2: not possible
@@ -718,14 +734,14 @@ class deck {
     int user_cards = eval.total_cards; //how many cards the user has
     int to_deal = 7 - user_cards; //the remaining cards to be dealt
 
-    //CASE 1: already two_pair
+    //CASE 1: already full house
     if(hand[hnd].info.full_house){
       hand[hnd].info.full_house_odds = 100;
       return;
     }
 
     //CASE 2: not possible
-    if((high == 1 && to_deal < 3) || (high == 2 && to_deal < 2)){
+    if((high == 1 && to_deal < 3) || (high == 2 && to_deal < 2) && !hand[hnd].info.two_pair){
       hand[hnd].info.full_house_odds = 0;
       return;
     }
@@ -733,6 +749,8 @@ class deck {
     double other_total = 0;
     double second_total = 0;
     int total_ranks = user_cards - high + 1; //how many ranks in hand
+    if(hand[hnd].info.two_pair)
+      --total_ranks;
     double total = 0; //to hold running total of viable hands
     int deck = 52 - user_cards; //how many cards in deck
     int single_ranks = total_ranks;
@@ -750,6 +768,7 @@ class deck {
             * pow(combo(4,to_deal - 1),to_deal-5);
       }
       total += other_total;
+      other_total = 0;
     }
 
     //Case 3.2: one card of one rank of full_house is currently in hand
@@ -775,6 +794,8 @@ class deck {
       //Case 3.3.1: one pair of full_house is in hand
       if(high == 2){
         second_total = combo(12,1) * combo(4,3);
+        second_total += combo(2,1) * combo(12,1)
+          * combo(4,2);
         if(to_deal > 3)
           second_total *= 11 * pow(4,to_deal-3);
       }
@@ -784,8 +805,8 @@ class deck {
     }
 
     //Case 3.4: one pair and one card of full_house in hand
-    if(to_deal >= 2 && high > 1){
-      if(single_ranks != 0){
+    if(to_deal >= 2 && high >= 2){
+      if(single_ranks != 0 && high < 3){
         //getting two matches to single cards
         other_total = combo(3,2) * single_ranks;
         other_total += 2; //get match to two_kind to complete full_house
@@ -800,7 +821,6 @@ class deck {
       }
       total += other_total + second_total;
       other_total = 0;
-      second_total = 0;
     }
 
     //Case 3.5: need one card to complete full_house
@@ -810,71 +830,123 @@ class deck {
         other_total = 3 * single_ranks;
       //Case 3.5.2: have two pair in hand
       else if(hand[hnd].info.two_pair)
-        other_total += 3 * 2;
+        other_total += 2 * 2;
       if(to_deal > 1){
         other_total *= (13-total_ranks) * pow(4,to_deal-1);
       }
+      total += other_total;
     }
 
     total /= combo(deck,to_deal);
-    hand[hnd].info.full_house_odds = 100*(float)total;
+    hand[hnd].info.full_house_odds = 100*total;
   }
 
+  //this works
   private void find_straight_odds(hand eval, int hnd) {
+    if(eval.total_cards == 2){
+      find_straight_odds_two(eval, hnd);
+      return;
+    }
+
     int fours = 0;
     int threes = 0;
 
-    if(hand[hnd].info.straight)
+    if(hand[hnd].info.straight) {
       hand[hnd].info.straight_odds = 100;
-
-    else{
-      float total;
-      float deck = 52 - eval.total_cards;
-      for(int i = 0; i < 13; ++i) {
-        if (hand[hnd].info.straight_opportunities[i] == 3)
-          ++threes;
-        if (hand[hnd].info.straight_opportunities[i] == 4)
-          ++fours;
-      }
-
-      if(threes == 0 && fours == 0){
-        hand[hnd].info.straight_odds = 0;
-        return;
-      }
-
-      if(eval.total_cards == 6){
-        total = (fours*4)/deck;
-        hand[hnd].info.straight_odds = total*100;
-      }
-
-      else if(eval.total_cards == 5){
-        total = 1 - ((fours*4)/deck);
-        total *= 1 - ((fours*4)/(deck-1));
-        hand[hnd].info.straight_odds = 100*(1 - total);
+      return;
+    }
 
 
-        if(threes > 0){
-          float other_total;
-          float another_total;
+    double total;
+    float deck = 52 - eval.total_cards;
+    for(int i = 0; i < 13; ++i) {
+      if (hand[hnd].info.straight_opportunities[i] == 3)
+        ++threes;
+      if (hand[hnd].info.straight_opportunities[i] == 4)
+        ++fours;
+    }
 
-          if(threes % 2 == 0){
-            other_total = (threes*4)/deck;
-            other_total *= (4 + (threes - 2))/(deck - 1);
-          }
+    if(threes == 0 && fours == 0){
+      hand[hnd].info.straight_odds = 0;
+      return;
+    }
 
-          else{
-            other_total = ((threes - 2) * 4) / deck;
-            other_total *= (threes - 1) * 4 / (deck - 1);
-            another_total = (threes - 1) * 4 / deck;
-            another_total *= (threes -2) * 4 / (deck - 1);
-            other_total += another_total;
-          }
+    if(eval.total_cards == 6){
+      total = (fours*4)/deck;
+      hand[hnd].info.straight_odds = total*100;
+    }
 
-          hand[hnd].info.straight_odds += other_total * 100;
+    else if(eval.total_cards == 5){
+      total = 1 - ((fours*4)/deck);
+      total *= 1 - ((fours*4)/(deck-1));
+      hand[hnd].info.straight_odds = 100*(1 - total);
+
+
+      if(threes > 0) {
+        double other_total;
+        double another_total;
+
+        if (threes % 2 == 0) {
+          other_total = (threes * 4) / deck;
+          other_total *= (4 + (threes - 2)) / (deck - 1);
+        } else {
+          other_total = ((threes - 2) * 4) / deck;
+          other_total *= (threes - 1) * 4 / (deck - 1);
+          another_total = (threes - 1) * 4 / deck;
+          another_total *= (threes - 2) * 4 / (deck - 1);
+          other_total += another_total;
         }
+
+        hand[hnd].info.straight_odds += other_total * 100;
       }
     }
   }
+
+  //in progress
+  private void find_straight_odds_two(hand eval, int hnd){
+    int first = hand[hnd].card[0].value;
+    int second = hand[hnd].card[1].value;
+    if(first > second){
+      int temp = first;
+      first = second;
+      second = temp;
+    }
+
+    //finds each run of five that will not run into current ranks
+    // (x x x x x) x 8 -> will be one empty five position
+    // (x [x <x x x) x] x> x 10 -> will be three empty five positions
+    int empty_fives = 0;
+    int hit = 0, i, j;
+
+    for(i = 0; i < 6; ++i){
+      if(i == first || i == second)
+        ++hit;
+    }
+    if(hit == 0)
+      ++empty_fives;
+
+    for(i = 0; i < 7; ++i){
+      hit = 0;
+      for(j = i; j < i+7; ++j){
+        if(j == first || j == second)
+          ++hit;
+      }
+      if(hit == 0)
+        ++empty_fives;
+    }
+
+    hit = 0;
+    for(i = 7; i < 13; ++i){
+      if(i == first || i == second)
+        ++hit;
+    }
+    if(hit == 0)
+      ++empty_fives;
+
+    System.out.println("\nFives: " + empty_fives);
+
+  }
+
 
   private void find_flush_odds(hand eval, int hnd) {
     float total;
