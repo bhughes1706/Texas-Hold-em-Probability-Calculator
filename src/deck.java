@@ -296,8 +296,6 @@ class deck {
   private void straight_finder(hand eval, int hnd){
     //holds possible straights and which cards are needed for straight
     //find_straight_odds fill out the array for each card
-    if(eval.total_cards == 2)
-      return;
 
       //creates array to hold current card values
     boolean [] straight_array = new boolean[13];
@@ -312,6 +310,8 @@ class deck {
       straight_array[eval.card[i].value] = true;
 
       //evaluates each five card chunk for possible straights
+      //if five cards to be dealt, then evaluates each position
+        //for needing 3, 4, or 5 cards in five spaces
       //if two cards are to be dealt, then needs four in five
       //if one card left to deal then needs four in five
       //achieved by: count >= (total_cards - 2)
@@ -945,33 +945,111 @@ class deck {
 
     System.out.println("\nFives: " + empty_fives);
 
+    double total = 0;
+    double other_total;
+
+    if(empty_fives != 0){
+      other_total = empty_fives * pow(4,5);
+      total += other_total;
+      other_total = 0;
+    }
+
+    /*
+      Interrogates evaluation from straight_finder fx
+      if 2's, then only need 3 cards of 5 to complete straight
+      if 1's, then need 4 of 5 to complete straight
+     */
+
+    int user_cards = eval.total_cards;
+    int to_deal = 7 - user_cards;
+    int deck = 52 - user_cards;
+    int ones = 0;
+    int twos = 0;
+
+    for(i = 0; i < 13; ++i){
+      if(hand[hnd].info.straight_opportunities[i] == 1)
+        ++ones;
+      else if (hand[hnd].info.straight_opportunities[i] == 2)
+        ++twos;
+    }
+
+    if(ones != 0){
+
+    }
+
+    if(twos != 0){
+
+    }
+
+    total /= combo(deck,to_deal);
+    hand[hnd].info.straight_odds = 100 * total;
   }
 
-
+  //in progress
   private void find_flush_odds(hand eval, int hnd) {
-    float total;
-    int cards = eval.total_cards;
-    float flush_number = hand[hnd].info.flush_total;
+    /*CASE 1: if already flush in hand
+      CASE 2: no possibility of flush
+      CASE 3: possible
+        Case 3.1: only one of suit in hand
+        Case 3.2: two of suit in hand
+        Case 3.3: three of suit in hand
+        Case 3.4: four of suit in hand
+    */
 
-    if(hand[hnd].info.flush)
+    int flush_number = hand[hnd].info.flush_total;
+    int user_cards = eval.total_cards;
+    int to_deal = 7 - user_cards;
+
+    //CASE 1: if already flush in hand
+    if(flush_number == 5){
       hand[hnd].info.flush_odds = 100;
-    else if(flush_number + (7 - cards) < 5)
-      hand[hnd].info.flush_odds = 0;
-    else if(flush_number == 3){
-      total = (13 - flush_number)/(52 - cards);
-      total *= (13 - flush_number - 1) / (52 - cards - 1);
-      hand[hnd].info.flush_odds = total*100;
-    }
-    else if(flush_number == 4){
-      total = (13 - flush_number) / (52 - cards);
-      if(cards == 5){
-        total = 1 - total;
-        total *= 1 - ((13 - flush_number) / (52 - cards - 1));
-        total = 1 - total;
-      }
-      hand[hnd].info.flush_odds = total*100;
+      return;
     }
 
+    //CASE 2: no possibility of flush
+    if(flush_number + to_deal < 5){
+      hand[hnd].info.flush_odds = 0;
+      return;
+    }
+
+    double total = 0;
+    double other_total = 0;
+    int deck = 52 - user_cards;
+
+    //CASE 3: possible flush
+    switch(flush_number){
+      //Case 3.1: only one of suit in hand
+      case 1:
+        other_total = combo(12,4) * user_cards;
+        if(to_deal > 4) {
+          other_total *= combo(11, to_deal - 4) * pow(4, to_deal - 4);
+        }
+        break;
+      //Case 3.2: two of suit in hand
+      case 2:
+        other_total = combo(11,3);
+        if(to_deal > 3){
+          other_total *= combo(12,to_deal - 3) * pow(4, to_deal - 3);
+        }
+        break;
+      //Case 3.3: three of suit in hand
+      case 3:
+        other_total = combo(10,2);
+        if(to_deal > 2){
+          other_total *= combo(12, to_deal - 2) * pow(4, to_deal - 2);
+        }
+        break;
+      //Case 3.4: four of suit in hand
+      case 4:
+        other_total= combo(9,1);
+        if(to_deal > 1){
+          other_total *= combo(12, to_deal - 1) * pow(4,to_deal - 1);
+        }
+        break;
+    }
+    total += other_total;
+    total /= combo(deck,to_deal);
+    hand[hnd].info.flush_odds = 100 * total;
   }
 
   private double combo(int all, int choose){

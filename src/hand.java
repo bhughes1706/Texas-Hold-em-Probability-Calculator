@@ -57,8 +57,10 @@ class hand_info{
     //holds possible straights and which cards are needed for straight
     //find_straight_odds fill out the array for each cards as follows...
     //3: three cards of five match / 4: four of five match / 0: no possible straight
-    //ie - 0 3 3 0 0 0 3 3 0 .. 0 -- 5,6,7 in hand, needing 3,4 or 8,9
+    //ie - 0 3 3 0 0 0 3 3 0 .. 0 -- 5,6,7 in hand, needing 3,4 or 8,9 (2 to draw)
     //ie - 0 4 0 0 0 0 4 0 .. 0 -- 5,6,7,8 in hand, needing only 4 or 9
+      //:::if at least four cards to be dealt:::
+    //ie - 1 1 1 0 2 2 2 0 1 1 ... 5 and 9 in hand, multiple opportunities with low odds
   protected int [] straight_opportunities;
 
   //all booleans are true if found in hand
