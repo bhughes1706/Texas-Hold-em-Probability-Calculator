@@ -432,7 +432,7 @@ class deck {
     hand[hnd].info.two_kind_odds = 100*total;
   }
 
-  //this is correct
+  //pretty sure this is correct
   private void find_two_pair_odds(hand eval, int hnd) {
     //CASE 1: already two_pair
     //CASE 2: not possible
