@@ -86,7 +86,9 @@ class InitProbabilities {
   }
 
   private double four_kind_odds() {
-    return 100*((combo(48,3)*13) / combo(52,7));
+    double total = 13; // * 4 choose 4 for four kind, which is one
+    total *= combo(48,3);
+    return 100 * (total / combo (52,7));
   }
 
   private double full_house_odds() {

@@ -409,9 +409,7 @@ class deck {
 
   private void find_two_kind_odds(hand eval, int hnd) {
     //CASE 1: already two of kind
-    //CASE 2: possible
-      //Case 2.1: two will match, but no rank currently in hand
-      //Case 2.2: one will match to a single rank currently in hand
+    //CASE 2: possible -- (1 - never have a match to anything in hand)
 
     //CASE 1: currently have two_kind
     if(hand[hnd].info.kind_high > 1){
@@ -422,26 +420,15 @@ class deck {
     int user_cards = eval.total_cards;
     int to_deal = 7 - eval.total_cards;
     double total = 0;
-    double other_total = 0;
+    double other_total = 1;
+    int deck = 52 - user_cards;
 
-    //Case 2.1
-    if(to_deal > 1) {
-      other_total = (13 - user_cards) * combo(4, 2);
-      if(to_deal > 2)
-        other_total *= combo(13 - user_cards - 1, to_deal - 2) * pow(4, to_deal - 2);
-      total += other_total;
+    //Case 2
+    for(int i = 0; i < to_deal; ++i){
+      total = user_cards * 3;
+      other_total *= (deck - total - i) / deck;
     }
-    //Case 2.2
-      other_total = user_cards * 3;
-    if(to_deal > 1) {
-      other_total *= combo(13 - user_cards, to_deal - 1) * pow(4, to_deal - 1);
-    }
-    total += other_total;
-
-
-    //Divide by all possible hands
-    total /= combo(52 - user_cards,to_deal);
-
+    total = 1 - other_total;
     hand[hnd].info.two_kind_odds = 100*total;
   }
 
@@ -612,7 +599,7 @@ class deck {
     hand[hnd].info.three_kind_odds = 100*total;
   }
 
-  //this is correct
+  //99% sure this is correct
   private void find_four_kind_odds(hand eval, int hnd) {
     /*CASE 1: already is four_kind
       CASE 2: no possibility of four_kind
@@ -656,7 +643,8 @@ class deck {
       //pow = any suit of other cards that don't matter
       other_total = (13 - total_ranks) * 4;
       if(to_deal > 4)
-        other_total *= (combo(12, to_deal - 4)) * pow(4, to_deal - 4);
+        other_total *= (combo(12 - total_ranks, to_deal - 4)) * pow(4, to_deal - 4) +
+            combo(total_ranks, to_deal - 4) * pow(3, to_deal - 4);
       total += other_total;
     }
 
@@ -664,15 +652,16 @@ class deck {
     if(to_deal >= 3) {
       int single_ranks = total_ranks;
       if (hand[hnd].info.full_house)
-        single_ranks -= 5;
+        single_ranks -= 3;
       else if (hand[hnd].info.two_pair)
-        single_ranks -= 4;
+        single_ranks -= 2;
       else if (high > 1)
         single_ranks -= high;
       if (single_ranks != 0) {
         other_total = single_ranks;
         if (to_deal > 3)
-          other_total *= combo(12, to_deal - 3) * pow(4, to_deal - 3);
+          other_total *= combo(12 - total_ranks, to_deal - 3) * pow(4, to_deal - 3) +
+              combo(total_ranks, to_deal - 3) * pow(3, to_deal - 3);
       }
       total += other_total;
     }
@@ -985,15 +974,16 @@ class deck {
     hand[hnd].info.straight_odds = 100 * total;
   }
 
-  //in progress
+  //needs refinement
   private void find_flush_odds(hand eval, int hnd) {
     /*CASE 1: if already flush in hand
       CASE 2: no possibility of flush
       CASE 3: possible
-        Case 3.1: only one of suit in hand
-        Case 3.2: two of suit in hand
-        Case 3.3: three of suit in hand
-        Case 3.4: four of suit in hand
+        Case 3.1: no suits of flush in hand
+        Case 3.2: only one of suit in hand
+        Case 3.3: two of suit in hand
+        Case 3.4: three of suit in hand
+        Case 3.5: four of suit in hand
     */
 
     int flush_number = hand[hnd].info.flush_total;
@@ -1015,14 +1005,21 @@ class deck {
     double total = 0;
     double other_total = 0;
     int deck = 52 - user_cards;
+    int suits = user_cards;
+    if(flush_number != 1)
+      --suits;
 
-    //CASE 3: possible flush
+    // CASE 3: possible flush
+    // Case 3.1: no suits of flush in hand
+    if(to_deal >= 5)
+      total = combo(13,5) * (4 - suits);
+
     switch(flush_number){
-      //Case 3.1: only one of suit in hand
+      //Case 3.2: only one of suit in hand
       case 1:
         other_total = combo(12,4) * user_cards;
         if(to_deal > 4) {
-          other_total *= combo(11, to_deal - 4) * pow(4, to_deal - 4);
+          other_total *= (combo(11, to_deal - 4) * pow(4, to_deal - 4)) + (3 * (user_cards - 1));
         }
         break;
       //Case 3.2: two of suit in hand
@@ -1032,14 +1029,14 @@ class deck {
           other_total *= combo(12,to_deal - 3) * pow(4, to_deal - 3);
         }
         break;
-      //Case 3.3: three of suit in hand
+      //Case 3.4: three of suit in hand
       case 3:
         other_total = combo(10,2);
         if(to_deal > 2){
           other_total *= combo(12, to_deal - 2) * pow(4, to_deal - 2);
         }
         break;
-      //Case 3.4: four of suit in hand
+      //Case 3.5: four of suit in hand
       case 4:
         other_total= combo(9,1);
         if(to_deal > 1){
@@ -1052,6 +1049,9 @@ class deck {
     hand[hnd].info.flush_odds = 100 * total;
   }
 
+  /*
+    Following is used for computations in find_odds functions.
+   */
   private double combo(int all, int choose){
     if(all < 1 || choose < 1)
       return 1;
@@ -1063,3 +1063,4 @@ class deck {
     else return number * factorial(number - 1);
   }
 }
+
