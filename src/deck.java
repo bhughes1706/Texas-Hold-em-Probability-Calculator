@@ -172,12 +172,17 @@ class deck {
       return null;
 
     //the below evaluates hand for each of the following conditions.
-    high_card_finder(hnd);
-    of_kind_finder(eval, hnd);
-    full_house_finder(eval, hnd);
-    two_pair_finder(eval, hnd);
-    flush_finder(eval, hnd);
-    straight_finder(eval, hnd);
+    eval.general_info(); //must always do this first
+    hand[hnd].high_card_finder();
+    dealer.high_card_finder();
+    eval.add_hand_high(hand[hnd].info.high_card);
+    eval.add_dealer_high(dealer.info.high_card);
+    eval.of_kind_finder(); //must be done before full_house
+    eval.full_house_finder();
+    eval.pair_finder();
+    eval.flush_finder();
+    eval.straight_finder();
+    hand[hnd].info = eval.info;
 
     //uses found conditions to calculate odds for each of below
     find_two_kind_odds(eval, hnd);
@@ -190,223 +195,13 @@ class deck {
     return hand[hnd].info; //returns to main
   }
 
-  private void high_card_finder(int hnd) {
-    int high = 0;
-    for (int i = 0; i < hand[hnd].total_cards; ++i) {
-      if (hand[hnd].card[i].value > high)
-        high = hand[hnd].card[i].value;
-    }
-    hand[hnd].info.hand_high = high;
-    if(dealer != null) {
-      for (int j = 0; j < dealer.total_cards; ++j) {
-        if (dealer.card[j].value > high)
-          high = dealer.card[j].value;
-      }
-      hand[hnd].info.deck_high = high;
-    }
-  }
-
-  private void of_kind_finder(hand eval, int hnd) {
-    int counter;
-    for (int i = 0; i < eval.total_cards - 1; ++i) {
-      counter = 1;
-      for (int j = i + 1; j < eval.total_cards; ++j) {
-        if (eval.card[i].value == eval.card[j].value) {
-          ++counter;
-          if (hand[hnd].info.kind_high <= counter) {
-            if (hand[hnd].info.kind_high < counter)
-              hand[hnd].info.value_kind_high = eval.card[i].value;
-            else if (hand[hnd].info.value_kind_high < eval.card[i].value)
-              hand[hnd].info.value_kind_high = eval.card[i].value;
-            hand[hnd].info.kind_high = counter;
-          }
-        }
-      }
-    }
-    if (hand[hnd].info.kind_high == 0)
-      hand[hnd].info.kind_high = 1;
-  }
-
-  private void full_house_finder(hand eval, int hnd) {
-    if (hand[hnd].info.kind_high < 3)
-      return;
-    int tripwire = 0;
-    int high = hand[hnd].info.value_kind_high;
-    for (int i = 0; i < eval.total_cards - 1; ++i) {
-      if (eval.card[i].value != high)
-        for (int j = i + 1; j < eval.total_cards; ++j) {
-          if (eval.card[j].value != high && eval.card[j] == eval.card[i])
-            ++tripwire;
-        }
-      if (tripwire == 1)
-        hand[hnd].info.full_house = true;
-    }
-  }
-
-  private void two_pair_finder(hand eval, int hnd) {
-    if (hand[hnd].info.kind_high < 2)
-      return;
-    int i, j, count;
-    for (i = 0; i < eval.total_cards - 1; ++i) {
-      count = 0;
-      int high = hand[hnd].info.value_kind_high;
-      if (eval.card[i].value != high) {
-        for (j = i + 1; j < eval.total_cards; ++j) {
-          if (eval.card[j].value != high && eval.card[i].value == eval.card[j].value) {
-            ++count;
-            hand[hnd].info.value_second_pair = eval.card[i].value;
-            hand[hnd].info.two_pair = true;
-          }
-        }
-      }
-    }
-  }
-
-  private void flush_finder(hand eval, int hnd) {
-    int count;
-    int high;
-    hand[hnd].info.flush_high = 0;
-    hand[hnd].info.flush_total = 0;
-
-    for (int i = 0; i < eval.total_cards - 1; ++i) {
-      count = 1;
-      high = 0;
-      for (int j = i + 1; j < eval.total_cards; ++j) {
-        if (eval.card[i].suit == eval.card[j].suit) {
-          ++count;
-          if(eval.card[i].value > eval.card[j].value) {
-            if(high < eval.card[i].value)
-              high = eval.card[i].value;
-          }
-          else {
-            if(high < eval.card[j].value)
-              high = eval.card[j].value;
-          }
-        }
-      }
-      if(count > hand[hnd].info.flush_total){
-        hand[hnd].info.flush_total = count;
-        hand[hnd].info.flush_high = high + 2;
-      }
-      if(count > 4)
-        hand[hnd].info.flush = true;
-    }
-  }
-
-  private void straight_finder(hand eval, int hnd){
-    //holds possible straights and which cards are needed for straight
-    //find_straight_odds fill out the array for each card
-
-      //creates array to hold current card values
-    boolean [] straight_array = new boolean[13];
-      //where cards are needed for a possible straight
-    int [] needed = new int[13];
-    int total_cards = eval.total_cards;
-    int count;
-    int i,j,k, l;
-
-      //find where all the cards are
-    for(i = 0; i < total_cards; ++i)
-      straight_array[eval.card[i].value] = true;
-
-      //evaluates each five card chunk for possible straights
-      //if five cards to be dealt, then evaluates each position
-        //for needing 3, 4, or 5 cards in five spaces
-      //if two cards are to be dealt, then needs four in five
-      //if one card left to deal then needs four in five
-      //achieved by: count >= (total_cards - 2)
-    for(j = 0; j < 9; ++j){
-      count = 0;
-        //runs forward through five positions and counts cards
-      for(k = 0; k < 5; ++k){
-        if(straight_array[j+k]) {
-          ++count;
-        }
-          //if there is a straight
-        if(count == 5) {
-          hand[hnd].info.straight = true;
-          break; //no reason to continue
-        }
-          //if there is cards needed to make straight and it's possible with
-          //remaining number of cards to be dealt
-        else if(count >= (total_cards-2)){
-          for(l = 0; l < 5; ++l){
-            if(!straight_array[j+l] && count > needed[j+l]){
-              needed[j+l] = count;
-            }
-          }
-        }
-      }
-    }
-
-      /* a very specific problem arises with the above algorithm when total_cards is 5
-         0 4 0 0 0 0 4 0 .. 0 -- 5,6,7,8 in hand, needing only 4 or 9
-         the above algorithm will evaluate to:
-         3 4 0 0 0 0 4 3 0 .. 0
-         Therefore, even numbers of 3's on each side of one 4 need to be removed
-         OR if there are two 4's, then eliminate all 3's no matter what
-         0 0 0 4 0 0 0 3 3 .. 0 -- 3,4,6,7,9 in hand, needing 5, OR: 10, Jack
-         the above algorithm will evaluate to
-         3 0 0 4 0 0 3 0 3 .. 0
-         Therefore, the smaller quantity of 3's on one side of the 4 need to
-         be removed (when non-equal) - while the larger quantity stays
-      */
-    if(total_cards == 5) {
-      int right = 0;
-      int left = 0;
-      int fours = 0;
-
-        //checks for 4's in needed array. No need to check end values (0, 12)
-      for (i = 1; i < 12; ++i){
-          //counts the number of fours
-        if(needed[i] == 4){
-          ++fours;
-            //counts 3's to the left of the 4
-          for(j = 0; j < i; ++j){
-            if(needed[j] == 3)
-              ++left;
-          }
-            //counts 3's to the right of the 4
-          for(k = i+1; k < 13; ++k){
-            if(needed[k] == 3)
-              ++right;
-          }
-            //if left and right are non-zero and equal OR
-            // if there are multiple 4's
-          if((left > 0 && right == left) || fours > 1 || (left + right == 1)){
-            for(j = 0; j < 13; ++j){
-                //eliminates all 3's
-              if(needed[j] == 3)
-                needed[j] = 0;
-            }
-          }
-            //right is larger, so eliminate all left 3's
-          else if(left < right){
-            for(l = 0; l < i; ++l){
-              if(needed[l] == 3)
-                needed[l] = 0;
-            }
-          }
-            //left is larger so eliminate all right 3's
-          else if(right < left){
-            for(l = i+1; l < 13; ++l){
-              if(needed[l] == 3)
-                needed[l] = 0;
-            }
-          }
-        }
-      }
-    }
-      //copies total evaluation into hand_info object
-    hand[hnd].info.straight_opportunities = needed;
-  }
-
   /*
     The following use the above finder functions' data to evaluate
     the to probability of specific events. All use simple
     statistical modeling.
    */
 
+  //this is correct
   private void find_two_kind_odds(hand eval, int hnd) {
     //CASE 1: already two of kind
     //CASE 2: possible -- (1 - never have a match to anything in hand)
@@ -425,10 +220,10 @@ class deck {
 
     //Case 2
     for(int i = 0; i < to_deal; ++i){
-      total = user_cards * 3;
-      other_total *= (deck - total - i) / deck;
+      total = (user_cards + i) * 3; //each card subsequent will be single rank
+      other_total *= (deck - total - i) / (deck - i); //the chance of each deal not matching card
     }
-    total = 1 - other_total;
+    total = 1 - other_total; //chance of getting match
     hand[hnd].info.two_kind_odds = 100*total;
   }
 
@@ -563,28 +358,32 @@ class deck {
     else if(high > 1)
       total_ranks -= high - 1;
 
-    //odds of getting three not matching in hand at moment
+    //Case 3.1: three will match, but no rank currently in hand
     if(to_deal > 2) {
         //13-total_ranks = not any current value of card in hand
-        //*4 = any suit // combo(12, to_deal-3) = other cards
+        //*4 = any suit // combo(10, to_deal-3) = other cards not in hand and not future 3 kind
         //pow = any suit of other cards that don't matter
         total += (13 - total_ranks) * 4 *
-            (combo(12, to_deal - 3)) * pow(4, to_deal - 3);
+            ((combo(12 - total_ranks, 2)) * pow(4, to_deal - 3) + (combo(total_ranks, 2) * pow(3, to_deal - 3)));
     }
 
-    //other cards besides two of a kind & two pair
-    int other_high = high; //besides matching cards
-    if(two_pair != 0) //and besides if two pair (shouldn't be possible)
-      other_high *= 2;
-    if(user_cards != other_high && to_deal > 1) {
+    //Case 3.2: two will match to a single rank currently in hand
+    if(to_deal > 1) {
+      //other cards besides two of a kind & two pair
+      int other_high = high; //besides matching cards
+      if (two_pair != 0) //and besides if two pair (shouldn't be possible)
+        other_high *= 2;
+      if (user_cards != other_high) {
         //ranks_not_important -> possible ranks to choose from, not two_kind or two_pair
         //combo(3,2) -> cards you need to match one in hand
         //combo(12-high+1+two_pair, to_deal - 2) -> random cards that don't matter
         //pow -> same as above
-      int ranks_not_important = total_ranks + high - 1 - two_pair;
-      total += ranks_not_important * combo(3, 2) *
-          combo(12-high+1+two_pair, to_deal - 2) * pow(4, to_deal - 2);
+        int ranks_not_important = total_ranks - high + 1 - two_pair;
+        total += ranks_not_important * combo(3, 2) *
+            (combo(13 - total_ranks, to_deal - 2) * pow(4, to_deal - 2)
+                + (combo(ranks_not_important - 1, 1) * 3));
       }
+    }
 
     //odds of getting match to two_of kind, two_pair, three_pair
     //high -> really combo(2,1) as only need one of two cards (4 if two_pair)
@@ -980,10 +779,7 @@ class deck {
       CASE 2: no possibility of flush
       CASE 3: possible
         Case 3.1: no suits of flush in hand
-        Case 3.2: only one of suit in hand
-        Case 3.3: two of suit in hand
-        Case 3.4: three of suit in hand
-        Case 3.5: four of suit in hand
+        Case 3.2: any number of flush_suits that are possible
     */
 
     int flush_number = hand[hnd].info.flush_total;
@@ -1003,48 +799,32 @@ class deck {
     }
 
     double total = 0;
-    double other_total = 0;
+    double all_others = 0;
+    double not_in_hand = 0;
+    double from_hand = 0;
     int deck = 52 - user_cards;
-    int suits = user_cards;
-    if(flush_number != 1)
-      --suits;
 
     // CASE 3: possible flush
     // Case 3.1: no suits of flush in hand
     if(to_deal >= 5)
-      total = combo(13,5) * (4 - suits);
+      not_in_hand = combo(13,5) * hand[hnd].info.suit_no[0];
 
-    switch(flush_number){
-      //Case 3.2: only one of suit in hand
-      case 1:
-        other_total = combo(12,4) * user_cards;
-        if(to_deal > 4) {
-          other_total *= (combo(11, to_deal - 4) * pow(4, to_deal - 4)) + (3 * (user_cards - 1));
-        }
-        break;
-      //Case 3.2: two of suit in hand
-      case 2:
-        other_total = combo(11,3);
-        if(to_deal > 3){
-          other_total *= combo(12,to_deal - 3) * pow(4, to_deal - 3);
-        }
-        break;
-      //Case 3.4: three of suit in hand
-      case 3:
-        other_total = combo(10,2);
-        if(to_deal > 2){
-          other_total *= combo(12, to_deal - 2) * pow(4, to_deal - 2);
-        }
-        break;
-      //Case 3.5: four of suit in hand
-      case 4:
-        other_total= combo(9,1);
-        if(to_deal > 1){
-          other_total *= combo(12, to_deal - 1) * pow(4,to_deal - 1);
-        }
-        break;
+    // Case 3.2: possibility of flush_number becoming flush
+    from_hand = combo(13 - flush_number,5 - flush_number);
+    if(flush_number == 1)
+      from_hand *= user_cards;//since either could become flush
+
+    //possibility of all other cards in cards not in flush
+    if(flush_number + to_deal > 5) {
+      if(hand[hnd].info.suit_no[0] != 0)
+        all_others += combo(13, to_deal - (5 - flush_number)) * pow(hand[hnd].info.suit_no[0], to_deal - (5 - flush_number));
+      if(hand[hnd].info.suit_no[1] != 0 && flush_number != 1)
+        all_others += combo(12, to_deal - (5 - flush_number)) * pow(hand[hnd].info.suit_no[1], to_deal - (5 - flush_number));
     }
-    total += other_total;
+    else
+      all_others = 1;
+    from_hand *= all_others;
+    total += from_hand + not_in_hand;
     total /= combo(deck,to_deal);
     hand[hnd].info.flush_odds = 100 * total;
   }
