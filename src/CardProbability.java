@@ -18,6 +18,7 @@ public class CardProbability {
       deck.init_deck();
       deck.add_user();
       deck.add_opponent();
+      deck.add_dealer();
       while (selector == 0 || selector == 1) {
         switch (selector) {
           case 0:
@@ -71,14 +72,21 @@ public class CardProbability {
         "\nTwo pairs: " + df.format(temp.two_pair_odds) + "%" +
         "\nFull house: " + df.format(temp.full_house_odds) + "%" +
         "\nAny Flush: " + df.format(temp.flush_odds) + "%" +
-        "\nStraight: " + df.format(temp.straight_odds) + "%");
-
-    //System.out.println("\nThe probability your hand will beat a random hand: " +
-    //    df.format(temp.random_hand) + "%");
+        "\nStraight: " + df.format(temp.straight_odds) + "%" +
+        "\nHand strength: " + temp.hand_strength);
   }
 
-    //needs implemented
-  private static void probability_guess(deck deck) {
+  private static void prob_hand(deck deck)throws ArrayIndexOutOfBoundsException {
+    try {
+      int iterations = 100000;
+      DecimalFormat df = new DecimalFormat("##.##");
+      int[] record = deck.iterator(iterations);
+      System.out.println("\nWin: " + df.format(100*(float)record[0]/iterations) + "%" +
+          "\nLoss: " + df.format(100*(float)record[1]/iterations) + "%" +
+          "\nTie: " + df.format(100*(float)record[2]/iterations) + "%");
+    } catch (ArrayIndexOutOfBoundsException error){
+      error.printStackTrace();
+    }
   }
 
   private static int init_menu() {
@@ -111,8 +119,8 @@ public class CardProbability {
     try {
       while (select <= 0 || select > 4) {
         System.out.println("\n\nWould you like to:" +
-            "\n1) Guess probability of winning hand against" +
-            " random hand\n2) See probabilities of different hands" +
+            "\n1) See probability your hand will win against random hand" +
+            "\n2) See probabilities of different hands" +
             "\n3) Deal cards\n4) Quit");
         Scanner in = new Scanner(System.in);
         select = in.nextInt();
@@ -123,14 +131,15 @@ public class CardProbability {
     }
     switch (select) {
       case 1:
-        probability_guess(deck);
+        prob_hand(deck);
         return 0;
       case 2:
         prob_print(deck);
         return 0;
       case 3:
         if(deck.dealer_number() == 0){
-          deck.add_dealer();
+          for(int i = 0; i < 3; ++i)
+            deck.deal_card(3);
           return 0;
         }
         else {
@@ -154,8 +163,8 @@ public class CardProbability {
     try {
       while (select <= 0 || select > 2) {
         System.out.println("\n\nWould you like to:" +
-            "\n1) Guess probability of winning hand against" +
-            " random hand\n2) Quit");
+            "\n1) See probability your hand will win against random hand" +
+            "\n2) Quit");
         Scanner in = new Scanner(System.in);
         select = in.nextInt();
       }
@@ -166,8 +175,8 @@ public class CardProbability {
 
     switch(select){
       case 1:
-        probability_guess(deck);
-        return 2;
+        prob_hand(deck);
+        return 1;
       case 2:
         return 3;
     }

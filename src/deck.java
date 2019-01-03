@@ -1,5 +1,4 @@
 import java.util.Random;
-import static java.lang.Math.pow;
 
 class deck {
   private node head;
@@ -18,7 +17,7 @@ class deck {
 
   //creates 52 card deck. takes first suit as argument (0)
   protected void init_deck() {
-    deck_size = build_deck(0);
+    build_deck(0);
   }
 
   //builds each suit up to 4 by calling build_suit
@@ -49,13 +48,12 @@ class deck {
     node temp = new node(suit, value);
     temp.next = head;
     head = temp;
+    ++deck_size;
   }
 
   //builds dealer hand by creating 5 card slots, and adds 3
   protected void add_dealer() {
     dealer = new hand(5);
-    for (int i = 0; i < 3; ++i)
-      deal_card(3);
   }
 
   //adds empty opponent hand
@@ -72,9 +70,9 @@ class deck {
 
   //deals one card to hand, 0 hand_number is user
   //3 or higher will deal to dealer's hand
-  protected int deal_card(int hand_number) throws NullPointerException {
-      //if deck is empty -- shouldn't ever happen
-    if (head == null) return 0;
+  protected void deal_card(int hand_number) throws NullPointerException {
+      //if deck is empty -- shouldn't happen
+    if (head == null) return;
     Random rand = new Random(); //gets random card placement
     int card_placement = rand.nextInt(deck_size);
     card temp;
@@ -88,15 +86,9 @@ class deck {
     if (hand_number < 3)
       hand[hand_number].add(temp);
       //if dealing to dealer
-    else {
+    else
       dealer.add(temp);
-      --deck_size;
-        //if dealer has full hand
-      if (dealer.total_cards == dealer.max_cards)
-        return 1;
-    }
     --deck_size;
-    return 0;
   }
 
   //if head is removed, this function will be called
@@ -121,7 +113,7 @@ class deck {
     return deal_from_deck(head.next, --card_placement);
   }
 
-  //removes card (only if it's not first card
+  //removes card (only if it's not first card)
   private card remove_card(node head) {
     card temp_card = head.next.card;
     if (head.next.next == null) {
@@ -153,6 +145,97 @@ class deck {
       return 0;
   }
 
+  protected int [] iterator(int iterations){
+    int dealer_start = dealer.total_cards, j, i;
+    hand_info user_one = null, opponent_one = null;
+    add_opponent();
+    int [] record = new int[3];
+    for(i = 0; i < iterations; ++i){
+      for(j = 0; j < 2; ++j)
+        deal_card(opponent);
+      if(dealer_start < 5){
+        for(j = dealer_start; j < 5; ++j)
+          deal_card(3);
+      }
+
+      //return 0 for win, 1 for loss, 2 for tie
+      ++record[compare(user, opponent, user_one, opponent_one)];
+
+      for(j = 0; j < 2; ++j) {
+        add(hand[opponent].card[j].suit, hand[opponent].card[j].value);
+        hand[opponent].card[j] = null;
+        --hand[opponent].total_cards;
+      }
+      for(j = dealer_start; j < 5; ++j) {
+        add(dealer.card[j].suit, dealer.card[j].value);
+        dealer.card[j] = null;
+        --dealer.total_cards;
+      }
+      hand[user].info.hand_strength = 0;
+      hand[opponent].info.hand_strength = 0;
+    }
+    return record;
+  }
+
+  private int compare(int one, int two, hand_info user, hand_info opponent) {
+    user = get_compare_info(one);
+    opponent = get_compare_info(two);
+
+    if (user.hand_strength > opponent.hand_strength)
+      return 0;
+
+    else if (user.hand_strength < opponent.hand_strength)
+      return 1;
+
+    else if (user.hand_strength == 0) {
+      if (hand[0].card[0].value > hand[1].card[0].value)
+        return 0;
+      if (hand[0].card[0].value < hand[1].card[0].value)
+        return 1;
+      if (hand[0].card[1].value > hand[1].card[1].value)
+        return 0;
+      if (hand[0].card[1].value < hand[1].card[1].value)
+        return 1;
+      return 2;
+    }
+
+    else if ((user.hand_strength > 0 && user.hand_strength < 4) || user.hand_strength == 7 || user.hand_strength == 6) {
+      if (user.value_kind_high > opponent.value_kind_high)
+        return 0;
+      else if (user.value_kind_high < opponent.value_kind_high)
+        return 1;
+      else if (user.value_second_pair > opponent.value_second_pair)
+        return 0;
+      else if (user.value_second_pair < opponent.value_second_pair)
+        return 1;
+      else if (hand[0].card[0].value > hand[1].card[0].value)
+        return 0;
+      else if (hand[0].card[0].value < hand[1].card[0].value)
+        return 1;
+      else if (hand[0].card[1].value > hand[1].card[1].value)
+        return 0;
+      else if (hand[0].card[1].value < hand[1].card[1].value)
+        return 1;
+      else
+        return 2;
+    }
+
+    else if (user.hand_strength == 5) {
+      if (user.flush_high > opponent.flush_high)
+        return 0;
+      else if (user.flush_high < opponent.flush_high)
+        return 1;
+    }
+
+    else if (user.hand_strength == 4) {
+      if (user.flush_high > opponent.flush_high)
+        return 0;
+      else if (user.flush_high < opponent.flush_high)
+        return 1;
+    }
+    return 2;
+  }
+
   /*
     evaluates hand and passes card_info class back to caller,
     passes null if there are no cards in hand -- Uses the below
@@ -173,674 +256,40 @@ class deck {
 
     //the below evaluates hand for each of the following conditions.
     eval.general_info(); //must always do this first
-    hand[hnd].high_card_finder();
-    dealer.high_card_finder();
-    eval.add_hand_high(hand[hnd].info.high_card);
-    eval.add_dealer_high(dealer.info.high_card);
+    hand[hnd].card_sorter();
     eval.of_kind_finder(); //must be done before full_house
     eval.full_house_finder();
     eval.pair_finder();
     eval.flush_finder();
     eval.straight_finder();
-    hand[hnd].info = eval.info;
 
     //uses found conditions to calculate odds for each of below
-    find_two_kind_odds(eval, hnd);
-    find_three_kind_odds(eval, hnd);
-    find_two_pair_odds(eval, hnd);
-    find_four_kind_odds(eval, hnd);
-    find_full_house_odds(eval, hnd);
-    find_flush_odds(eval, hnd);
-    find_straight_odds(eval, hnd);
-    return hand[hnd].info; //returns to main
+    eval.find_two_kind_odds();
+    eval.find_three_kind_odds();
+    eval.find_two_pair_odds();
+    eval.find_four_kind_odds();
+    eval.find_full_house_odds();
+    eval.find_flush_odds();
+    eval.find_straight_odds();
+    return eval.info; //returns to main
   }
 
-  /*
-    The following use the above finder functions' data to evaluate
-    the to probability of specific events. All use simple
-    statistical modeling.
-   */
+  protected hand_info get_compare_info(int select){
+    hand evaluation = new hand(7);
+    evaluation.to_copy(hand[select]);
+    evaluation.to_copy(dealer);
 
-  //this is correct
-  private void find_two_kind_odds(hand eval, int hnd) {
-    //CASE 1: already two of kind
-    //CASE 2: possible -- (1 - never have a match to anything in hand)
-
-    //CASE 1: currently have two_kind
-    if(hand[hnd].info.kind_high > 1){
-      hand[hnd].info.two_kind_odds = 100;
-      return;
+    evaluation.general_info();
+    hand[select].card_sorter();
+    evaluation.of_kind_finder();
+    if(evaluation.info.kind_high > 1) {
+      evaluation.pair_finder();
+      if(evaluation.info.kind_high > 2)
+        evaluation.full_house_finder();
     }
+    evaluation.flush_finder();
+    evaluation.straight_finder();
 
-    int user_cards = eval.total_cards;
-    int to_deal = 7 - eval.total_cards;
-    double total = 0;
-    double other_total = 1;
-    int deck = 52 - user_cards;
-
-    //Case 2
-    for(int i = 0; i < to_deal; ++i){
-      total = (user_cards + i) * 3; //each card subsequent will be single rank
-      other_total *= (deck - total - i) / (deck - i); //the chance of each deal not matching card
-    }
-    total = 1 - other_total; //chance of getting match
-    hand[hnd].info.two_kind_odds = 100*total;
-  }
-
-  //pretty sure this is correct
-  private void find_two_pair_odds(hand eval, int hnd) {
-    //CASE 1: already two_pair
-    //CASE 2: not possible
-    //CASE 3: possible
-      //Case 3.1: two pair are not current ranks in hand
-      //Case 3.2: one card of one rank of two_pair is currently in hand
-      //Case 3.3: one card of each rank of two_pair is in hand
-        //Case 3.3.1: one pair of two_pair is in hand
-      //Case 3.4: one pair and one card of two_pair in hand
-
-    if(hand[hnd].info.two_pair) {
-      hand[hnd].info.two_pair_odds = 100;
-      return;
-    }
-
-    double total = 0;
-    double other_total = 0;
-    int user_total = eval.total_cards;
-    int high = hand[hnd].info.kind_high;
-    int deck = 52 - user_total;
-    int to_deal = 7 - user_total;
-    int current_ranks = user_total;
-
-    if(high > 1) {
-      current_ranks -= high;
-      ++current_ranks;
-    }
-
-    //Case 3.1: two pair are not current ranks in hand
-    if(to_deal >= 4){
-      other_total = pow(combo(4,2),2)
-          *combo(13-current_ranks, 2);
-      if(to_deal > 4)
-        other_total *= combo(13-current_ranks-1, to_deal-4)
-            * pow(4, to_deal-4);
-      total += other_total;
-      other_total = 0;
-    }
-
-    //Case 3.2: one card of one rank of two_pair is currently in hand
-    if(to_deal >= 3) {
-      //eliminate anything not a single card
-      int temp_ranks = current_ranks;
-      if (high > 1)
-        --temp_ranks;
-      if (temp_ranks != 0) {
-        other_total = 3 * combo(13 - current_ranks, 1) * combo(4, 2);
-        if (to_deal > 3)
-          other_total *= combo(13 - current_ranks - 1, to_deal - 3)
-              * pow(4, to_deal - 3);
-        total += other_total;
-      }
-      other_total = 0;
-    }
-
-    //Case 3.3: one card of each rank of two_pair is in hand
-    if(to_deal >= 2) {
-      int temp_ranks = current_ranks;
-      if (high > 1)
-        --temp_ranks;
-      if (temp_ranks != 0) {
-        other_total = 3 * temp_ranks * combo(temp_ranks, 2);
-        if (to_deal > 2)
-          other_total *= combo(13 - current_ranks, to_deal - 2) * pow(4, to_deal - 2);
-        total += other_total;
-      }
-      other_total = 0;
-
-      //Case 3.3.1: one pair of two_pair is in hand
-      if (high > 1) {
-        other_total += combo(4, 2) * (13 - current_ranks);
-        if(to_deal > 2)
-          other_total *= combo(13 - current_ranks - 1, to_deal - 2) * pow(4, to_deal - 2);
-        total += other_total;
-      }
-      other_total = 0;
-    }
-
-    //Case 3.4: one pair and one card of two_pair in hand
-    if(to_deal >= 1 && high > 1){
-      --current_ranks;
-      if(current_ranks != 0) {
-        other_total = 3 * current_ranks;
-        if (to_deal > 1) {
-          other_total *= combo(13 - current_ranks + 1, to_deal - 1)
-              * pow(4, to_deal - 1);
-        }
-        total += other_total;
-      }
-    }
-
-    total /= combo(deck,to_deal);
-    hand[hnd].info.two_pair_odds = 100 * total;
-  }
-
-  //pretty sure this is correct
-  private void find_three_kind_odds(hand eval, int hnd) {
-    //CASE 1: already three of kind
-    //CASE 2: three of a kind not possible
-    //CASE 3: possible
-      //Case 3.1: three will match, but no rank currently in hand
-      //Case 3.2: two will match to a single rank currently in hand
-      //Case 3.3: one will match to two of a kind currently in hand
-        //accounts for two pair, three pair
-
-    int high = hand[hnd].info.kind_high;
-
-    if(high > 2) {
-      hand[hnd].info.three_kind_odds = 100;
-      return;
-    }
-    else if(high + 7 - eval.total_cards < 3) {
-      hand[hnd].info.three_kind_odds = 0;
-      return;
-    }
-
-    int user_cards = eval.total_cards;
-    int total_ranks = user_cards;
-    int two_pair = 0;
-    int deck = 52 - eval.total_cards;
-    int to_deal = 7 - eval.total_cards;
-    double total = 0;
-
-    if(hand[hnd].info.two_pair) {
-      total_ranks -= 2;
-      ++two_pair;
-    }
-    else if(high > 1)
-      total_ranks -= high - 1;
-
-    //Case 3.1: three will match, but no rank currently in hand
-    if(to_deal > 2) {
-        //13-total_ranks = not any current value of card in hand
-        //*4 = any suit // combo(10, to_deal-3) = other cards not in hand and not future 3 kind
-        //pow = any suit of other cards that don't matter
-        total += (13 - total_ranks) * 4 *
-            ((combo(12 - total_ranks, 2)) * pow(4, to_deal - 3) + (combo(total_ranks, 2) * pow(3, to_deal - 3)));
-    }
-
-    //Case 3.2: two will match to a single rank currently in hand
-    if(to_deal > 1) {
-      //other cards besides two of a kind & two pair
-      int other_high = high; //besides matching cards
-      if (two_pair != 0) //and besides if two pair (shouldn't be possible)
-        other_high *= 2;
-      if (user_cards != other_high) {
-        //ranks_not_important -> possible ranks to choose from, not two_kind or two_pair
-        //combo(3,2) -> cards you need to match one in hand
-        //combo(12-high+1+two_pair, to_deal - 2) -> random cards that don't matter
-        //pow -> same as above
-        int ranks_not_important = total_ranks - high + 1 - two_pair;
-        total += ranks_not_important * combo(3, 2) *
-            (combo(13 - total_ranks, to_deal - 2) * pow(4, to_deal - 2)
-                + (combo(ranks_not_important - 1, 1) * 3));
-      }
-    }
-
-    //odds of getting match to two_of kind, two_pair, three_pair
-    //high -> really combo(2,1) as only need one of two cards (4 if two_pair)
-    //combo(12,to_deal-1) -> all other cards of ranks that don't matter
-    //pow -> same as above, for suits
-    if(two_pair != 0)
-      high *= 2;
-    if(high > 1) {
-      total += high * combo(12, to_deal - 1) * pow(4, to_deal - 1);
-    }
-    total /= combo(deck, to_deal);
-    hand[hnd].info.three_kind_odds = 100*total;
-  }
-
-  //99% sure this is correct
-  private void find_four_kind_odds(hand eval, int hnd) {
-    /*CASE 1: already is four_kind
-      CASE 2: no possibility of four_kind
-      CASE 3: possibility
-        Case 3.1: four of kind is not currently a rank
-        Case 3.2: currently single rank in hand
-        Case 3.3: currently two-kind, or pair, or three-pair
-        Case 3.4: currently three-kind, or pair of triples
-    */
-    int high = hand[hnd].info.kind_high; //high kind (3 for three of a kind)
-    int user_cards = eval.total_cards; //how many cards the user has
-    int to_deal = 7 - user_cards; //the remaining cards to be dealt
-
-    //CASE 1: four_kind already
-    if(high > 3) {
-      hand[hnd].info.four_kind_odds = 100;
-      return;
-    }
-
-    //CASE 2: four_kind not a possibility
-    else if(high + to_deal < 4) {
-      hand[hnd].info.four_kind_odds = 0;
-      return;
-    }
-
-    int total_ranks = user_cards - high + 1; //how many ranks in hand
-    double total = 0; //to hold running total of viable hands
-    int deck = 52 - user_cards; //how many cards in deck
-    double other_total = 0; //used for each section, adds to total
-
-    //checks for less ranks
-    if(hand[hnd].info.full_house || hand[hnd].info.two_pair)
-      total_ranks -= 1;
-    //if(hand[hnd].info.three_pair || hand[hnd].info.two_threes)
-    //  total_ranks -= 1;
-
-    //Case 3.1: four_kind comes from no current rank
-    if(to_deal >= 4){
-      //13-total_ranks = not any current value of card in hand
-      //*4 = any suit // combo(12, to_deal-4) = other cards
-      //pow = any suit of other cards that don't matter
-      other_total = (13 - total_ranks) * 4;
-      if(to_deal > 4)
-        other_total *= (combo(12 - total_ranks, to_deal - 4)) * pow(4, to_deal - 4) +
-            combo(total_ranks, to_deal - 4) * pow(3, to_deal - 4);
-      total += other_total;
-    }
-
-    //Case 3.2: four_kind comes from a single current rank
-    if(to_deal >= 3) {
-      int single_ranks = total_ranks;
-      if (hand[hnd].info.full_house)
-        single_ranks -= 3;
-      else if (hand[hnd].info.two_pair)
-        single_ranks -= 2;
-      else if (high > 1)
-        single_ranks -= high;
-      if (single_ranks != 0) {
-        other_total = single_ranks;
-        if (to_deal > 3)
-          other_total *= combo(12 - total_ranks, to_deal - 3) * pow(4, to_deal - 3) +
-              combo(total_ranks, to_deal - 3) * pow(3, to_deal - 3);
-      }
-      total += other_total;
-    }
-
-    //Case 3.3: four_kind comes from current 2 of a kind rank
-    if(to_deal >= 2) {
-      int double_ranks = 0;
-      if(hand[hnd].info.full_house)
-        ++double_ranks;
-      else if(hand[hnd].info.two_pair)
-        double_ranks += 2;
-      else if(high == 2)
-        ++double_ranks;
-      if(double_ranks != 0){
-        other_total = double_ranks;
-        if(to_deal > 2)
-          other_total *= combo(12,to_deal-2)*pow(4,to_deal-2);
-        total += other_total;
-      }
-    }
-
-    //Case 3.4: four_kind comes from current three of a kind rank
-    if(to_deal >= 1){
-      int triple_ranks = 0;
-      //if(hand[hnd].info.two_threes)
-        //++triple_ranks;
-      if(hand[hnd].info.full_house || high == 3){
-        ++triple_ranks;
-      }
-      if(triple_ranks != 0) {
-        other_total = triple_ranks;
-        if(to_deal > 1){
-          other_total *= combo(13-triple_ranks, to_deal-triple_ranks)
-              *pow(4,to_deal-triple_ranks);
-        }
-        total += other_total;
-      }
-    }
-      //total will have all viable four_kind hands
-      //divides by all possible hands
-      total /= combo(deck, to_deal);
-      hand[hnd].info.four_kind_odds = 100*total;
-  }
-
-  //pretty sure this is correct
-  private void find_full_house_odds(hand eval, int hnd){
-    //CASE 1: already two_pair
-    //CASE 2: not possible
-    //CASE 3: possible
-      //Case 3.1: full house are not current ranks in hand
-      //Case 3.2: one card of one rank of full_house is currently in hand
-      //Case 3.3: one card of each rank of full_house is in hand
-        //Case 3.3.1: one pair of full_house is in hand
-      //Case 3.4: one pair and one card of two_pair in hand
-        //Case 3.4.1: three_kind in hand, need pair
-      //Case 3.5: two_pair in hand, need one more
-
-    int high = hand[hnd].info.kind_high; //high kind (3 for three of a kind)
-    int user_cards = eval.total_cards; //how many cards the user has
-    int to_deal = 7 - user_cards; //the remaining cards to be dealt
-
-    //CASE 1: already full house
-    if(hand[hnd].info.full_house){
-      hand[hnd].info.full_house_odds = 100;
-      return;
-    }
-
-    //CASE 2: not possible
-    if((high == 1 && to_deal < 3) || (high == 2 && to_deal < 2) && !hand[hnd].info.two_pair){
-      hand[hnd].info.full_house_odds = 0;
-      return;
-    }
-
-    double other_total = 0;
-    double second_total = 0;
-    int total_ranks = user_cards - high + 1; //how many ranks in hand
-    if(hand[hnd].info.two_pair)
-      --total_ranks;
-    double total = 0; //to hold running total of viable hands
-    int deck = 52 - user_cards; //how many cards in deck
-    int single_ranks = total_ranks;
-    if(hand[hnd].info.two_pair)
-      --single_ranks;
-    if(high > 1)
-      --single_ranks;
-
-    //Case 3.1: full house are not current ranks in hand
-    if(to_deal >= 5){
-      other_total = (13 - total_ranks) * (12 - total_ranks) * combo(4,3)
-        * combo(4,2);
-      if(to_deal > 5){
-        other_total *= (13 - total_ranks - 2)
-            * pow(combo(4,to_deal - 1),to_deal-5);
-      }
-      total += other_total;
-      other_total = 0;
-    }
-
-    //Case 3.2: one card of one rank of full_house is currently in hand
-    if(to_deal >= 4){
-      if(single_ranks != 0) {
-        other_total = (13 - total_ranks) * combo(4, 3) * 3 * single_ranks;
-        other_total += (13 - total_ranks) * combo(4, 2)
-            * pow(combo(3, 2), single_ranks);
-        if (to_deal > 4)
-          other_total *= (13 - total_ranks - 1) * pow(4, to_deal - 4);
-        total += other_total;
-        other_total = 0;
-      }
-    }
-
-    //Case 3.3: one card of each rank of full_house is in hand
-    if(to_deal >= 3){
-      if(single_ranks != 0){
-        other_total = pow(pow(3,2),2);
-        if(to_deal > 3)
-          other_total *= 11*(pow(4,to_deal-3));
-      }
-      //Case 3.3.1: one pair of full_house is in hand
-      if(high == 2){
-        second_total = combo(12,1) * combo(4,3);
-        second_total += combo(2,1) * combo(12,1)
-          * combo(4,2);
-        if(to_deal > 3)
-          second_total *= 11 * pow(4,to_deal-3);
-      }
-      total += other_total + second_total;
-      other_total = 0;
-      second_total = 0;
-    }
-
-    //Case 3.4: one pair and one card of full_house in hand
-    if(to_deal >= 2 && high >= 2){
-      if(single_ranks != 0 && high < 3){
-        //getting two matches to single cards
-        other_total = combo(3,2) * single_ranks;
-        other_total += 2; //get match to two_kind to complete full_house
-        if(to_deal > 2)
-          other_total *= (13 - total_ranks) * pow(4,to_deal-2);
-      }
-      //Case 3.4.1: three_kind in hand, need pair
-      if(high >= 3){
-        second_total = (13 - total_ranks) * combo(4,2);
-        if(to_deal > 2)
-          second_total *= (13-total_ranks-1) * pow(4,to_deal-2);
-      }
-      total += other_total + second_total;
-      other_total = 0;
-    }
-
-    //Case 3.5: need one card to complete full_house
-    if(to_deal >= 1 && ((high == 3 && single_ranks > 0) || hand[hnd].info.two_pair)){
-      //Case 3.5.1: hand three_kind and single rank in hand
-      if(high == 3)
-        other_total = 3 * single_ranks;
-      //Case 3.5.2: have two pair in hand
-      else if(hand[hnd].info.two_pair)
-        other_total += 2 * 2;
-      if(to_deal > 1){
-        other_total *= (13-total_ranks) * pow(4,to_deal-1);
-      }
-      total += other_total;
-    }
-
-    total /= combo(deck,to_deal);
-    hand[hnd].info.full_house_odds = 100*total;
-  }
-
-  //this works
-  private void find_straight_odds(hand eval, int hnd) {
-    if(eval.total_cards == 2){
-      find_straight_odds_two(eval, hnd);
-      return;
-    }
-
-    int fours = 0;
-    int threes = 0;
-
-    if(hand[hnd].info.straight) {
-      hand[hnd].info.straight_odds = 100;
-      return;
-    }
-
-
-    double total;
-    float deck = 52 - eval.total_cards;
-    for(int i = 0; i < 13; ++i) {
-      if (hand[hnd].info.straight_opportunities[i] == 3)
-        ++threes;
-      if (hand[hnd].info.straight_opportunities[i] == 4)
-        ++fours;
-    }
-
-    if(threes == 0 && fours == 0){
-      hand[hnd].info.straight_odds = 0;
-      return;
-    }
-
-    if(eval.total_cards == 6){
-      total = (fours*4)/deck;
-      hand[hnd].info.straight_odds = total*100;
-    }
-
-    else if(eval.total_cards == 5){
-      total = 1 - ((fours*4)/deck);
-      total *= 1 - ((fours*4)/(deck-1));
-      hand[hnd].info.straight_odds = 100*(1 - total);
-
-
-      if(threes > 0) {
-        double other_total;
-        double another_total;
-
-        if (threes % 2 == 0) {
-          other_total = (threes * 4) / deck;
-          other_total *= (4 + (threes - 2)) / (deck - 1);
-        } else {
-          other_total = ((threes - 2) * 4) / deck;
-          other_total *= (threes - 1) * 4 / (deck - 1);
-          another_total = (threes - 1) * 4 / deck;
-          another_total *= (threes - 2) * 4 / (deck - 1);
-          other_total += another_total;
-        }
-
-        hand[hnd].info.straight_odds += other_total * 100;
-      }
-    }
-  }
-
-  //in progress
-  private void find_straight_odds_two(hand eval, int hnd){
-    int first = hand[hnd].card[0].value;
-    int second = hand[hnd].card[1].value;
-    if(first > second){
-      int temp = first;
-      first = second;
-      second = temp;
-    }
-
-    //finds each run of five that will not run into current ranks
-    // (x x x x x) x 8 -> will be one empty five position
-    // (x [x <x x x) x] x> x 10 -> will be three empty five positions
-    int empty_fives = 0;
-    int hit = 0, i, j;
-
-    for(i = 0; i < 6; ++i){
-      if(i == first || i == second)
-        ++hit;
-    }
-    if(hit == 0)
-      ++empty_fives;
-
-    for(i = 0; i < 7; ++i){
-      hit = 0;
-      for(j = i; j < i+7; ++j){
-        if(j == first || j == second)
-          ++hit;
-      }
-      if(hit == 0)
-        ++empty_fives;
-    }
-
-    hit = 0;
-    for(i = 7; i < 13; ++i){
-      if(i == first || i == second)
-        ++hit;
-    }
-    if(hit == 0)
-      ++empty_fives;
-
-    System.out.println("\nFives: " + empty_fives);
-
-    double total = 0;
-    double other_total;
-
-    if(empty_fives != 0){
-      other_total = empty_fives * pow(4,5);
-      total += other_total;
-      other_total = 0;
-    }
-
-    /*
-      Interrogates evaluation from straight_finder fx
-      if 2's, then only need 3 cards of 5 to complete straight
-      if 1's, then need 4 of 5 to complete straight
-     */
-
-    int user_cards = eval.total_cards;
-    int to_deal = 7 - user_cards;
-    int deck = 52 - user_cards;
-    int ones = 0;
-    int twos = 0;
-
-    for(i = 0; i < 13; ++i){
-      if(hand[hnd].info.straight_opportunities[i] == 1)
-        ++ones;
-      else if (hand[hnd].info.straight_opportunities[i] == 2)
-        ++twos;
-    }
-
-    if(ones != 0){
-
-    }
-
-    if(twos != 0){
-
-    }
-
-    total /= combo(deck,to_deal);
-    hand[hnd].info.straight_odds = 100 * total;
-  }
-
-  //needs refinement
-  private void find_flush_odds(hand eval, int hnd) {
-    /*CASE 1: if already flush in hand
-      CASE 2: no possibility of flush
-      CASE 3: possible
-        Case 3.1: no suits of flush in hand
-        Case 3.2: any number of flush_suits that are possible
-    */
-
-    int flush_number = hand[hnd].info.flush_total;
-    int user_cards = eval.total_cards;
-    int to_deal = 7 - user_cards;
-
-    //CASE 1: if already flush in hand
-    if(flush_number == 5){
-      hand[hnd].info.flush_odds = 100;
-      return;
-    }
-
-    //CASE 2: no possibility of flush
-    if(flush_number + to_deal < 5){
-      hand[hnd].info.flush_odds = 0;
-      return;
-    }
-
-    double total = 0;
-    double all_others = 0;
-    double not_in_hand = 0;
-    double from_hand = 0;
-    int deck = 52 - user_cards;
-
-    // CASE 3: possible flush
-    // Case 3.1: no suits of flush in hand
-    if(to_deal >= 5)
-      not_in_hand = combo(13,5) * hand[hnd].info.suit_no[0];
-
-    // Case 3.2: possibility of flush_number becoming flush
-    from_hand = combo(13 - flush_number,5 - flush_number);
-    if(flush_number == 1)
-      from_hand *= user_cards;//since either could become flush
-
-    //possibility of all other cards in cards not in flush
-    if(flush_number + to_deal > 5) {
-      if(hand[hnd].info.suit_no[0] != 0)
-        all_others += combo(13, to_deal - (5 - flush_number)) * pow(hand[hnd].info.suit_no[0], to_deal - (5 - flush_number));
-      if(hand[hnd].info.suit_no[1] != 0 && flush_number != 1)
-        all_others += combo(12, to_deal - (5 - flush_number)) * pow(hand[hnd].info.suit_no[1], to_deal - (5 - flush_number));
-    }
-    else
-      all_others = 1;
-    from_hand *= all_others;
-    total += from_hand + not_in_hand;
-    total /= combo(deck,to_deal);
-    hand[hnd].info.flush_odds = 100 * total;
-  }
-
-  /*
-    Following is used for computations in find_odds functions.
-   */
-  private double combo(int all, int choose){
-    if(all < 1 || choose < 1)
-      return 1;
-    return factorial(all)/(factorial(all-choose)*factorial(choose));
-  }
-
-  private double factorial(int number){
-    if (number <= 1) return 1;
-    else return number * factorial(number - 1);
+    return evaluation.info;
   }
 }
-
