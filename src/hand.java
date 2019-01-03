@@ -981,23 +981,23 @@ class hand_info{
 
   protected void quick_evaluation(){
     int i, j, count;
-    for (i = 0; i < 4; ++i) {
-      if (rank_no[i] == 2) {
-        if(hand_strength < 1)
-          hand_strength = 1;
-        for (j = i + 1; j < 4; ++j) {
-          if (rank_no[j] == 2 && hand_strength < 2)
-            hand_strength = 2;
-          if (rank_no[j] == 3 && hand_strength < 6)
-            hand_strength = 6;
-        }
-      }
-      if(rank_no[i] == 3 && hand_strength < 3)
-        hand_strength = 3;
-      if(rank_no[i] == 4 && hand_strength < 7)
-        hand_strength = 7;
-    }
 
+      if (rank_no[2] == 1) {
+        hand_strength = 1;
+        if (rank_no[3] == 1)
+          hand_strength = 6;
+      }
+
+      if(rank_no[2] == 2 || rank_no[2] == 3 && hand_strength < 2)
+        hand_strength = 2;
+
+      if(rank_no[3] > 0 && hand_strength < 3)
+        hand_strength = 3;
+
+      if(rank_no[4] > 0)
+        hand_strength = 7;
+
+    //only runs if possible hand strength is higher than current
     if(hand_strength < 5) {
       for (i = 0; i < 4; ++i) {
         if (suit_no[i] > 4 && hand_strength < 5)
@@ -1005,6 +1005,7 @@ class hand_info{
       }
     }
 
+    //only runs if possible hand strength is higher than current
     if(hand_strength < 4) {
       for (i = 0; i < 8; ++i) {
         count = 0;
@@ -1016,6 +1017,7 @@ class hand_info{
           if (count == 4 && hand_strength < 4) {
             hand_strength = 4;
             if (straight_high < j)
+              //acquires straight high value for possible ties
               straight_high = j;
           }
         }
