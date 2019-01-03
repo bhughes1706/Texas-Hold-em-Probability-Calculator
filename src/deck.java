@@ -147,8 +147,6 @@ class deck {
 
   protected int [] iterator(int iterations){
     int dealer_start = dealer.total_cards, j, i;
-    hand_info user_one = null, opponent_one = null;
-    add_opponent();
     int [] record = new int[3];
     for(i = 0; i < iterations; ++i){
       for(j = 0; j < 2; ++j)
@@ -159,7 +157,7 @@ class deck {
       }
 
       //return 0 for win, 1 for loss, 2 for tie
-      ++record[compare(user, opponent, user_one, opponent_one)];
+      ++record[compare(user, opponent)];
 
       for(j = 0; j < 2; ++j) {
         add(hand[opponent].card[j].suit, hand[opponent].card[j].value);
@@ -177,9 +175,9 @@ class deck {
     return record;
   }
 
-  private int compare(int one, int two, hand_info user, hand_info opponent) {
-    user = get_compare_info(one);
-    opponent = get_compare_info(two);
+  private int compare(int one, int two) {
+    hand_info user = get_compare_info(one);
+    hand_info opponent = get_compare_info(two);
 
     if (user.hand_strength > opponent.hand_strength)
       return 0;
@@ -228,9 +226,9 @@ class deck {
     }
 
     else if (user.hand_strength == 4) {
-      if (user.flush_high > opponent.flush_high)
+      if (user.straight_high > opponent.straight_high)
         return 0;
-      else if (user.flush_high < opponent.flush_high)
+      else if (user.straight_high < opponent.straight_high)
         return 1;
     }
     return 2;
@@ -274,6 +272,7 @@ class deck {
     return eval.info; //returns to main
   }
 
+  //this is a truncated version that quickly evaluates a hand using the bare minimum
   protected hand_info get_compare_info(int select){
     hand evaluation = new hand(7);
     evaluation.to_copy(hand[select]);
@@ -281,14 +280,8 @@ class deck {
 
     evaluation.general_info();
     hand[select].card_sorter();
-    evaluation.of_kind_finder();
-    if(evaluation.info.kind_high > 1) {
-      evaluation.pair_finder();
-      if(evaluation.info.kind_high > 2)
-        evaluation.full_house_finder();
-    }
-    evaluation.flush_finder();
-    evaluation.straight_finder();
+
+    evaluation.quick_evaluation();
 
     return evaluation.info;
   }

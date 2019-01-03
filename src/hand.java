@@ -282,6 +282,10 @@ class hand {
     info.straight_opportunities = needed;
   }
 
+  public void quick_evaluation() {
+    info.quick_evaluation();
+  }
+
     /*
     The following use the above finder functions' data to evaluate
     the to probability of specific events. All use simple
@@ -920,7 +924,6 @@ class hand {
     if (number <= 1) return 1;
     else return number * factorial(number - 1);
   }
-
 }
 
 
@@ -974,5 +977,49 @@ class hand_info{
     suits = new int[4];
     suit_no = new int[8];
     hand_strength = 0;
+  }
+
+  protected void quick_evaluation(){
+    int i, j, count;
+    for (i = 0; i < 4; ++i) {
+      if (rank_no[i] == 2) {
+        if(hand_strength < 1)
+          hand_strength = 1;
+        for (j = i + 1; j < 4; ++j) {
+          if (rank_no[j] == 2 && hand_strength < 2)
+            hand_strength = 2;
+          if (rank_no[j] == 3 && hand_strength < 6)
+            hand_strength = 6;
+        }
+      }
+      if(rank_no[i] == 3 && hand_strength < 3)
+        hand_strength = 3;
+      if(rank_no[i] == 4 && hand_strength < 7)
+        hand_strength = 7;
+    }
+
+    if(hand_strength < 5) {
+      for (i = 0; i < 4; ++i) {
+        if (suit_no[i] > 4 && hand_strength < 5)
+          hand_strength = 5;
+      }
+    }
+
+    if(hand_strength < 4) {
+      for (i = 0; i < 8; ++i) {
+        count = 0;
+        if (ranks[i] != 0) {
+          for (j = i + 1; j < 5; ++j) {
+            if (ranks[j] != 0)
+              ++count;
+          }
+          if (count == 4 && hand_strength < 4) {
+            hand_strength = 4;
+            if (straight_high < j)
+              straight_high = j;
+          }
+        }
+      }
+    }
   }
 }
