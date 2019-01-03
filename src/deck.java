@@ -206,14 +206,17 @@ class deck {
         return 0;
       else if (user.value_second_pair < opponent.value_second_pair)
         return 1;
-      else if (hand[0].card[0].value > hand[1].card[0].value)
-        return 0;
-      else if (hand[0].card[0].value < hand[1].card[0].value)
-        return 1;
-      else if (hand[0].card[1].value > hand[1].card[1].value)
-        return 0;
-      else if (hand[0].card[1].value < hand[1].card[1].value)
-        return 1;
+      //evaluates extra cards, can't apply to full house, as it already is 5 cards
+      if(user.hand_strength != 6) {
+      if (hand[0].card[0].value > hand[1].card[0].value)
+          return 0;
+        else if (hand[0].card[0].value < hand[1].card[0].value)
+          return 1;
+        else if (hand[0].card[1].value > hand[1].card[1].value)
+          return 0;
+        else if (hand[0].card[1].value < hand[1].card[1].value)
+          return 1;
+      }
       else
         return 2;
     }
@@ -273,6 +276,7 @@ class deck {
   }
 
   //this is a truncated version that quickly evaluates a hand using the bare minimum
+  //since only is interested in final results, it's much smaller than a full evaluation
   protected hand_info get_compare_info(int select){
     hand evaluation = new hand(7);
     evaluation.to_copy(hand[select]);
@@ -282,6 +286,10 @@ class deck {
     hand[select].card_sorter();
 
     evaluation.quick_evaluation();
+
+    //the only thing quick_evaluation can't handle
+    if(evaluation.info.hand_strength == 5)
+      evaluation.get_flush_high();
 
     return evaluation.info;
   }

@@ -8,6 +8,9 @@ class InitProbabilities {
   and for flexibility in different poker games for future coding,
   and, because it's good practice
 
+  These are probabilities that the user will get exactly this hand,
+  so all will add up to 100%
+
   http://pi.math.cornell.edu/~mec/2006-2007/Probability/Texasholdem.pdf
   http://mathforum.org/library/drmath/view/65306.html
   were both used as reference and for initial guidance
