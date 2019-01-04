@@ -79,7 +79,7 @@ public class CardProbability {
   private static void prob_hand(deck deck)throws ArrayIndexOutOfBoundsException {
     try {
       int iterations = 100000;
-      DecimalFormat df = new DecimalFormat("##.##");
+      DecimalFormat df = new DecimalFormat("##.###");
       int[] record = deck.iterator(iterations);
       System.out.println("\nWin: " + df.format(100*(float)record[0]/iterations) + "%" +
           "\nLoss: " + df.format(100*(float)record[1]/iterations) + "%" +

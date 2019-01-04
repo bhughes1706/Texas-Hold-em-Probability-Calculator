@@ -78,7 +78,7 @@ class hand_info {
     }
 
     //only runs if possible hand strength is higher than current
-    if (hand_strength < 4) {
+    if (hand_strength < 4 || hand_strength == 5) {
       for (i = 0; i < 8; ++i) {
         count = 0;
         if (ranks[i] != 0) {
@@ -86,8 +86,11 @@ class hand_info {
             if (ranks[j] != 0)
               ++count;
           }
-          if (count == 4 && hand_strength < 4) {
-            hand_strength = 4;
+          if (count == 4) {
+            if(hand_strength == 5)
+              straight = true;
+            else
+              hand_strength = 4;
             if (straight_high < j)
               //acquires straight high value for possible ties
               straight_high = j;
@@ -103,26 +106,26 @@ class hand_info {
         for (i = 0; i < 13; ++i) {
           if (ranks[i] > 1)
             value_kind_high = ranks[i];
-        }
+        }break;
       case 2:
         for(i = 0; i < 13; ++i){
           if(ranks[i] > 1) {
             value_second_pair = value_kind_high;
             value_kind_high = ranks[i];
           }
-        }
+        }break;
       case 3:
         for (i = 0; i < 13; ++i) {
           if (ranks[i] > 2)
             value_kind_high = ranks[i];
-        }
+        }break;
       case 6:
         for(i = 0; i < 13; ++i){
           if(ranks[i] == 3)
             value_kind_high = ranks[i];
           else if(ranks[i] == 2)
             value_second_pair = ranks[i];
-        }
+        }break;
       case 7:
         for (i = 0; i < 13; ++i) {
           if (ranks[i] > 3)

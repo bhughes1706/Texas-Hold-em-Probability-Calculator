@@ -228,7 +228,7 @@ class deck {
         return 1;
     }
 
-    else if (user.hand_strength == 4) {
+    else if (user.hand_strength == 4 || user.hand_strength == 8) {
       if (user.straight_high > opponent.straight_high)
         return 0;
       else if (user.straight_high < opponent.straight_high)

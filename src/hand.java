@@ -937,5 +937,17 @@ class hand {
           info.flush_high = card[i].value;
       }
     }
+    //if there's a straight present, checks for straight flush
+    if(info.straight){
+      int count = 0;
+      for(i = 0; i < total_cards; ++i){
+        if(card[i].value >= (info.flush_high - 4) && card[i].suit == suit)
+          ++count;
+      }
+      if(count == 5)
+        info.hand_strength = 8;
+      if(count == 5 && info.flush_high == 13)
+        info.hand_strength = 9;
+    }
   }
 }
