@@ -105,31 +105,31 @@ class hand_info {
       case 1:
         for (i = 0; i < 13; ++i) {
           if (ranks[i] > 1)
-            value_kind_high = ranks[i];
+            value_kind_high = i;
         }break;
       case 2:
         for(i = 0; i < 13; ++i){
           if(ranks[i] > 1) {
             value_second_pair = value_kind_high;
-            value_kind_high = ranks[i];
+            value_kind_high = i;
           }
         }break;
       case 3:
         for (i = 0; i < 13; ++i) {
           if (ranks[i] > 2)
-            value_kind_high = ranks[i];
+            value_kind_high = i;
         }break;
       case 6:
         for(i = 0; i < 13; ++i){
           if(ranks[i] == 3)
-            value_kind_high = ranks[i];
+            value_kind_high = i;
           else if(ranks[i] == 2)
-            value_second_pair = ranks[i];
+            value_second_pair = i;
         }break;
       case 7:
         for (i = 0; i < 13; ++i) {
           if (ranks[i] > 3)
-            value_kind_high = ranks[i];
+            value_kind_high = i;
         }
     }
   }

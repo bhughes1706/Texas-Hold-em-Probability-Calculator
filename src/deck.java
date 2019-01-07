@@ -138,7 +138,7 @@ class deck {
 
     //used to determine how many cards to deal,
     //or if any cards have been dealt to dealer
-  public int dealer_number() {
+  protected int dealer_number() {
     if(dealer != null)
       return dealer.total_cards();
     else
@@ -212,10 +212,12 @@ class deck {
           return 0;
         else if (hand[0].card[0].value < hand[1].card[0].value)
           return 1;
+        //evaluates second card in hand in case of first being tie,
+        //but only for three kind and two kind
         else if (hand[0].card[1].value > hand[1].card[1].value)
-          return 0;
+            return 0;
         else if (hand[0].card[1].value < hand[1].card[1].value)
-          return 1;
+            return 1;
       }
       else
         return 2;
@@ -258,10 +260,7 @@ class deck {
     //the below evaluates hand for each of the following conditions.
     eval.general_info(); //must always do this first
     hand[hnd].card_sorter();
-    eval.of_kind_finder(); //must be done before full_house
-    eval.full_house_finder();
-    eval.pair_finder();
-    eval.flush_finder();
+    hand[hnd].info.quick_evaluation();
     eval.straight_finder();
 
     //uses found conditions to calculate odds for each of below
