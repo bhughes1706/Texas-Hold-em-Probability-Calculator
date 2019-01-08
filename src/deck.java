@@ -57,7 +57,7 @@ class deck {
   }
 
   //adds empty opponent hand
-  protected void add_opponent(){
+  protected void add_opponent() {
     hand[opponent] = new hand(2);
   }
 
@@ -71,18 +71,18 @@ class deck {
   //deals one card to hand, 0 hand_number is user
   //3 or higher will deal to dealer's hand
   protected void deal_card(int hand_number) throws NullPointerException {
-      //if deck is empty -- shouldn't happen
+    //if deck is empty -- shouldn't happen
     if (head == null) return;
     Random rand = new Random(); //gets random card placement
     int card_placement = rand.nextInt(deck_size);
     card temp;
-      //if head is needed
+    //if head is needed
     if (card_placement == 0)
       temp = remove_first(head);
       //if any other card is needed
     else
       temp = deal_from_deck(head, card_placement);
-      //if hand is opponent or user
+    //if hand is opponent or user
     if (hand_number < 3)
       hand[hand_number].add(temp);
       //if dealing to dealer
@@ -130,48 +130,47 @@ class deck {
   protected void display() {
     System.out.print("\nYour hand:");
     hand[user].display();
-    if (dealer != null){
+    if (dealer != null) {
       System.out.print("\n\nDealer's hand: ");
       dealer.display();
     }
   }
 
-    //used to determine how many cards to deal,
-    //or if any cards have been dealt to dealer
+  //used to determine how many cards to deal,
+  //or if any cards have been dealt to dealer
   protected int dealer_number() {
-    if(dealer != null)
+    if (dealer != null)
       return dealer.total_cards();
     else
       return 0;
   }
 
-  protected int [] iterator(int iterations){
+  protected int[] iterator(int iterations) {
     int dealer_start = dealer.total_cards, j, i;
-    int [] record = new int[3];
-    for(i = 0; i < iterations; ++i){
-      for(j = 0; j < 2; ++j)
+    int[] record = new int[3];
+    stopwatch watch = new stopwatch();
+    watch.begin();
+    for (i = 0; i < iterations; ++i) {
+      for (j = 0; j < 2; ++j)
         deal_card(opponent);
-      if(dealer_start < 5){
-        for(j = dealer_start; j < 5; ++j)
+      if (dealer_start < 5) {
+        for (j = dealer_start; j < 5; ++j)
           deal_card(3);
       }
 
       //return 0 for win, 1 for loss, 2 for tie
       ++record[compare(user, opponent)];
 
-      for(j = 0; j < 2; ++j) {
+      for (j = 0; j < 2; ++j) {
         add(hand[opponent].card[j].suit, hand[opponent].card[j].value);
-        hand[opponent].card[j] = null;
         --hand[opponent].total_cards;
       }
-      for(j = dealer_start; j < 5; ++j) {
+      for (j = dealer_start; j < 5; ++j) {
         add(dealer.card[j].suit, dealer.card[j].value);
-        dealer.card[j] = null;
         --dealer.total_cards;
       }
-      hand[user].info.hand_strength = 0;
-      hand[opponent].info.hand_strength = 0;
     }
+    System.out.println("\nTime elapsed: " + watch.elapsedTime());
     return record;
   }
 
@@ -185,56 +184,56 @@ class deck {
     else if (user.hand_strength < opponent.hand_strength)
       return 1;
 
-    else if (user.hand_strength == 0) {
-      if (hand[0].card[0].value > hand[1].card[0].value)
-        return 0;
-      if (hand[0].card[0].value < hand[1].card[0].value)
-        return 1;
-      if (hand[0].card[1].value > hand[1].card[1].value)
-        return 0;
-      if (hand[0].card[1].value < hand[1].card[1].value)
-        return 1;
-      return 2;
-    }
-
-    else if ((user.hand_strength > 0 && user.hand_strength < 4) || user.hand_strength == 7 || user.hand_strength == 6) {
-      if (user.value_kind_high > opponent.value_kind_high)
-        return 0;
-      else if (user.value_kind_high < opponent.value_kind_high)
-        return 1;
-      else if (user.value_second_pair > opponent.value_second_pair)
-        return 0;
-      else if (user.value_second_pair < opponent.value_second_pair)
-        return 1;
-      //evaluates extra cards, can't apply to full house, as it already is 5 cards
-      if(user.hand_strength != 6) {
-      if (hand[0].card[0].value > hand[1].card[0].value)
+    //if user and opponent have same hand strength, following finds tiebreaker
+    switch(user.hand_strength) {
+      case 0:
+        if (hand[0].card[0].value > hand[1].card[0].value)
           return 0;
-        else if (hand[0].card[0].value < hand[1].card[0].value)
+        if (hand[0].card[0].value < hand[1].card[0].value)
           return 1;
-        //evaluates second card in hand in case of first being tie,
-        //but only for three kind and two kind
-        else if (hand[0].card[1].value > hand[1].card[1].value)
-            return 0;
-        else if (hand[0].card[1].value < hand[1].card[1].value)
-            return 1;
-      }
-      else
+        if (hand[0].card[1].value > hand[1].card[1].value)
+          return 0;
+        if (hand[0].card[1].value < hand[1].card[1].value)
+          return 1;
         return 2;
-    }
-
-    else if (user.hand_strength == 5) {
-      if (user.flush_high > opponent.flush_high)
-        return 0;
-      else if (user.flush_high < opponent.flush_high)
-        return 1;
-    }
-
-    else if (user.hand_strength == 4 || user.hand_strength == 8) {
-      if (user.straight_high > opponent.straight_high)
-        return 0;
-      else if (user.straight_high < opponent.straight_high)
-        return 1;
+      case 1:
+      case 2:
+      case 3:
+      case 6:
+      case 7:
+        if (user.value_kind_high > opponent.value_kind_high)
+          return 0;
+        else if (user.value_kind_high < opponent.value_kind_high)
+          return 1;
+        else if (user.value_second_pair > opponent.value_second_pair)
+          return 0;
+        else if (user.value_second_pair < opponent.value_second_pair)
+          return 1;
+        //evaluates extra cards, can't apply to full house, as it already is 5 cards
+        if (user.hand_strength != 6) {
+          if (hand[0].card[0].value > hand[1].card[0].value)
+            return 0;
+          else if (hand[0].card[0].value < hand[1].card[0].value)
+            return 1;
+            //evaluates second card in hand in case of first being tie,
+            //but only for three kind and two kind
+          else if (hand[0].card[1].value > hand[1].card[1].value)
+            return 0;
+          else if (hand[0].card[1].value < hand[1].card[1].value)
+            return 1;
+        } else
+          return 2;
+      case 5:
+        if (user.flush_high > opponent.flush_high)
+          return 0;
+        else if (user.flush_high < opponent.flush_high)
+          return 1;
+      case 4:
+      case 8: //won't evaluate royal flush, it's obviously a tie at that point
+        if (user.straight_high > opponent.straight_high)
+          return 0;
+        else if (user.straight_high < opponent.straight_high)
+          return 1;
     }
     return 2;
   }
@@ -249,9 +248,9 @@ class deck {
   protected hand_info get_info(int hnd) {
     //creates combined hand with user's and dealer's hand
     hand eval = new hand(7);
-    if(hand[hnd] != null)
+    if (hand[hnd] != null)
       eval.to_copy(hand[hnd]); //copies user's hand
-    if(dealer != null)
+    if (dealer != null)
       eval.to_copy(dealer); //copies dealer's hand
 
     if (eval.total_cards == 0)
@@ -259,8 +258,10 @@ class deck {
 
     //the below evaluates hand for each of the following conditions.
     eval.general_info(); //must always do this first
-    hand[hnd].card_sorter();
-    hand[hnd].info.quick_evaluation();
+    eval.of_kind_finder();
+    eval.full_house_finder();
+    eval.pair_finder();
+    eval.flush_finder();
     eval.straight_finder();
 
     //uses found conditions to calculate odds for each of below
@@ -276,7 +277,8 @@ class deck {
 
   //this is a truncated version that quickly evaluates a hand using the bare minimum
   //since only is interested in final results, it's much smaller than a full evaluation
-  protected hand_info get_compare_info(int select){
+  //this is done to speed up iterations
+  protected hand_info get_compare_info(int select) {
     hand evaluation = new hand(7);
     evaluation.to_copy(hand[select]);
     evaluation.to_copy(dealer);
@@ -287,7 +289,7 @@ class deck {
     evaluation.quick_evaluation();
 
     //the only thing quick_evaluation can't handle
-    if(evaluation.info.hand_strength == 5)
+    if (evaluation.info.hand_strength == 5)
       evaluation.get_flush_high();
 
     return evaluation.info;

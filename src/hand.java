@@ -71,6 +71,98 @@ class hand {
     }
   }
 
+  protected void of_kind_finder(){
+    int counter;
+    for (int i = 0; i < total_cards - 1; ++i) {
+      counter = 1;
+      for (int j = i + 1; j < total_cards; ++j) {
+        if (card[i].value == card[j].value) {
+          ++counter;
+          if (info.kind_high <= counter) {
+            if (info.kind_high < counter)
+              info.value_kind_high = card[i].value;
+            else if (info.value_kind_high < card[i].value)
+              info.value_kind_high = card[i].value;
+            info.kind_high = counter;
+          }
+        }
+      }
+    }
+    if (info.kind_high == 0)
+      info.kind_high = 1;
+  }
+
+  protected void full_house_finder() {
+    int tripwire = 0;
+    int high = info.value_kind_high;
+    for (int i = 0; i < total_cards - 1; ++i) {
+      if (card[i].value != high)
+        for (int j = i + 1; j < total_cards; ++j) {
+          if (card[j].value != high && card[j] == card[i])
+            ++tripwire;
+        }
+      if (tripwire > 0) {
+        info.full_house = true;
+        if (info.hand_strength < 6)
+          info.hand_strength = 6;
+      }
+    }
+  }
+
+  protected void pair_finder(){
+    if (info.kind_high < 2)
+      return;
+    if(info.rank_no[2] == 3)
+      info.three_pair = true;
+    int i, j;
+    for (i = 0; i < total_cards - 1; ++i) {
+      int high = info.value_kind_high;
+      if (card[i].value != high) {
+        for (j = i + 1; j < total_cards; ++j) {
+          if (card[j].value != high && card[i].value == card[j].value) {
+            info.value_second_pair = card[i].value;
+            info.two_pair = true;
+          }
+        }
+      }
+    }
+    if(info.two_pair && info.hand_strength < 2)
+      info.hand_strength = 3;
+  }
+
+  protected void flush_finder(){
+    int count;
+    int high;
+    info.flush_high = 0;
+    info.flush_total = 0;
+
+    for (int i = 0; i < total_cards - 1; ++i) {
+      count = 1;
+      high = 0;
+      for (int j = i + 1; j < total_cards; ++j) {
+        if (card[i].suit == card[j].suit) {
+          ++count;
+          if(card[i].value > card[j].value) {
+            if(high < card[i].value)
+              high = card[i].value;
+          }
+          else {
+            if(high < card[j].value)
+              high = card[j].value;
+          }
+        }
+      }
+      if(count > info.flush_total){
+        info.flush_total = count;
+        info.flush_high = high + 2;
+      }
+      if(count > 4)
+        info.flush = true;
+        if(info.flush && info.hand_strength < 5)
+          info.hand_strength = 5;
+    }
+  }
+
   protected void straight_finder(){
     //holds possible straights and which cards are needed for straight
     //find_straight_odds fill out the array for each card
@@ -103,6 +195,7 @@ class hand {
         }
         //if there is a straight
         if(count == 5) {
+          info.straight = true;
           info.straight_high = high_straight;
           if(info.hand_strength < 4)
             info.hand_strength = 4;
@@ -204,7 +297,7 @@ class hand {
     }
 
     int to_deal = 7 - total_cards;
-    double total;
+    double total = 0;
     double other_total = 1;
     int deck = 52 - total_cards;
 
@@ -228,7 +321,7 @@ class hand {
     //Case 3.3.1: one pair of two_pair is in hand
     //Case 3.4: one pair and one card of two_pair in hand
 
-    if(info.hand_strength == 3 || info.hand_strength == 5) {
+    if(info.two_pair) {
       info.two_pair_odds = 100;
       return;
     }
@@ -337,7 +430,7 @@ class hand {
     int to_deal = 7 - total_cards;
     double total = 0;
 
-    if(info.hand_strength == 6) {
+    if(info.two_pair) {
       total_ranks -= 2;
       ++two_pair;
     }

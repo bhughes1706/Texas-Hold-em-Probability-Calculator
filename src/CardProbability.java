@@ -52,6 +52,8 @@ public class CardProbability {
 
     //just used for testing right now
   private static void prob_print(deck deck) {
+    stopwatch stopwatch = new stopwatch();
+    stopwatch.begin();
     hand_info temp;
     temp = deck.get_info(0);
     DecimalFormat df = new DecimalFormat("##.##");
@@ -73,12 +75,13 @@ public class CardProbability {
         "\nFull house: " + df.format(temp.full_house_odds) + "%" +
         "\nAny Flush: " + df.format(temp.flush_odds) + "%" +
         "\nStraight: " + df.format(temp.straight_odds) + "%" +
-        "\nHand strength: " + temp.hand_strength);
+        "\nHand strength: " + temp.hand_strength +
+        "\nTime: " + stopwatch.elapsedTime());
   }
 
   private static void prob_hand(deck deck)throws ArrayIndexOutOfBoundsException {
     try {
-      int iterations = 100000;
+      int iterations = 300000;
       DecimalFormat df = new DecimalFormat("##.###");
       int[] record = deck.iterator(iterations);
       System.out.println("\nWin: " + df.format(100*(float)record[0]/iterations) + "%" +

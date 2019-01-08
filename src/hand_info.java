@@ -41,7 +41,6 @@ class hand_info {
 
   //initializes array to proper values
   protected hand_info() {
-    int i;
     straight_opportunities = new int[13];
     ranks = new int[13];
     rank_no = new int[5];
@@ -55,30 +54,41 @@ class hand_info {
 
     if (rank_no[2] == 1) {
       hand_strength = 1;
-      if (rank_no[3] == 1)
+      if (rank_no[3] == 1) {
         hand_strength = 6;
+        additional_evaluation();
+        return;
+      }
     }
 
-    if (rank_no[2] == 2 || rank_no[2] == 3 && hand_strength < 2)
+    if (rank_no[2] == 2 || rank_no[2] == 3 && hand_strength < 2) {
       hand_strength = 2;
+      additional_evaluation();
+      return;
+    }
 
     if (rank_no[3] > 0 && hand_strength < 3)
       hand_strength = 3;
 
-    if (rank_no[4] > 0)
+    if (rank_no[4] > 0) {
       hand_strength = 7;
+      additional_evaluation();
+      return;
+    }
 
     //only runs if possible hand strength is higher than current
     //finds flush
     if (hand_strength < 5) {
       for (i = 0; i < 4; ++i) {
-        if (suit_no[i] > 4 && hand_strength < 5)
+        if (suit_no[i] > 4)
           hand_strength = 5;
       }
     }
 
     //only runs if possible hand strength is higher than current
+    //checks for straights, and finds highest straight card
     if (hand_strength < 4 || hand_strength == 5) {
+
       for (i = 0; i < 8; ++i) {
         count = 0;
         if (ranks[i] != 0) {
@@ -87,7 +97,7 @@ class hand_info {
               ++count;
           }
           if (count == 4) {
-            if(hand_strength == 5)
+            if (hand_strength == 5)
               straight = true;
             else
               hand_strength = 4;
@@ -98,9 +108,12 @@ class hand_info {
         }
       }
     }
+  }
 
+  protected void additional_evaluation(){
     //this adds evaluations as needed
     //most are simply finding the highest of_kind or second_pair
+    int i;
     switch (hand_strength) {
       case 1:
         for (i = 0; i < 13; ++i) {
