@@ -1,30 +1,37 @@
 /*
   This class only holds the numerical value and suit of card
   value is 0 - 12. Add 2 for actual value and account for face cards
+
+  Suit 1: Hearts // 2: Diamonds // 3: Clubs // 4: Spades
  */
 
 public class card {
-  protected int value;
+  protected int rank;
   protected int suit;
 
-  card(int suit_init, int value_init){
-    value = value_init;
+  //constructor - used when adding a new card during deck initialization
+  card(int suit_init, int rank_init){
+    rank = rank_init;
     suit = suit_init;
   }
+
+  //copy constructor, used when copying a card from the deck
   card(card to_copy){
-    value = to_copy.value;
+    rank = to_copy.rank;
     suit = to_copy.suit;
   }
+
+  //for displaying one single card, accounts for face cards and suits
   protected void display() {
     System.out.print(" The " );
 
     // 9 + 2 = 11, which is the Jack. Default case is numbered card.
-    switch(value){
-      case 9: System.out.print("Jack "); break;
+    switch(rank){
+      case 9: System.out.print("Jack"); break;
       case 10: System.out.print("Queen"); break;
       case 11: System.out.print("King"); break;
       case 12: System.out.print("Ace"); break;
-      default: System.out.print((value + 2)); break;
+      default: System.out.print((rank + 2)); break;
     }
 
     switch(suit){

@@ -5,10 +5,10 @@ import static java.lang.Math.pow;
   Contains the hand_info class, which is a list of information about the hand
  */
 class hand {
-  protected card [] card;
-  protected int total_cards;
-  protected hand_info info;
-  protected int max_cards;
+  protected card [] card; //array of cards in hand
+  protected int total_cards; //total cards in hand
+  protected hand_info info; //to store card evaluation stats about hand
+  protected int max_cards; //how may cards are possible in hand (dealer = 5, player = 2)
 
     //sets hand array size
   hand(int max){
@@ -45,7 +45,15 @@ class hand {
     return total_cards;
   }
 
+  //sets rank and suit info for hand
   protected void general_info(){
+    /* looks at hand and records how many of each suit there are, how many of each rank there are
+       and what criteria are met, ie:
+       5 6 5 9 5 hand would evaluate to -- rank_no[0]:10 // rank_no[1]: 2 // rank_no[3]: 1 // rank_no[4]:0
+       meaning ten ranks not in hand, 2 cards are single ranks, one rank has three cards, and none have four
+       suit_no works similarly
+     */
+
     if(total_cards == 0)
       return;
 
@@ -57,222 +65,34 @@ class hand {
         ++info.suit_no[info.suits[j]];
 
     for(i = 0; i < total_cards; ++i)
-      ++info.ranks[card[i].value];
+      ++info.ranks[card[i].rank];
 
     for(j = 0; j < 13; ++j)
       ++info.rank_no[info.ranks[j]];
   }
 
+  //this makes sure the largest of the two cards in player hands are in order
+  //for analyzation of tie-breaker hands
   protected void card_sorter(){
-    if(card[0].value < card[1].value){
+    if(card[0].rank < card[1].rank){
       card temp = card[0];
       this.card[0] = card[1];
       this.card[1] = temp;
     }
   }
 
-  protected void of_kind_finder(){
-    int counter;
-    for (int i = 0; i < total_cards - 1; ++i) {
-      counter = 1;
-      for (int j = i + 1; j < total_cards; ++j) {
-        if (card[i].value == card[j].value) {
-          ++counter;
-          if (info.kind_high <= counter) {
-            if (info.kind_high < counter)
-              info.value_kind_high = card[i].value;
-            else if (info.value_kind_high < card[i].value)
-              info.value_kind_high = card[i].value;
-            info.kind_high = counter;
-          }
-        }
-      }
-    }
-    if (info.kind_high == 0)
-      info.kind_high = 1;
-  }
-
-  protected void full_house_finder() {
-    int tripwire = 0;
-    int high = info.value_kind_high;
-    for (int i = 0; i < total_cards - 1; ++i) {
-      if (card[i].value != high)
-        for (int j = i + 1; j < total_cards; ++j) {
-          if (card[j].value != high && card[j] == card[i])
-            ++tripwire;
-        }
-      if (tripwire > 0) {
-        info.full_house = true;
-        if (info.hand_strength < 6)
-          info.hand_strength = 6;
-      }
-    }
-  }
-
-  protected void pair_finder(){
-    if (info.kind_high < 2)
-      return;
-    if(info.rank_no[2] == 3)
-      info.three_pair = true;
-    int i, j;
-    for (i = 0; i < total_cards - 1; ++i) {
-      int high = info.value_kind_high;
-      if (card[i].value != high) {
-        for (j = i + 1; j < total_cards; ++j) {
-          if (card[j].value != high && card[i].value == card[j].value) {
-            info.value_second_pair = card[i].value;
-            info.two_pair = true;
-          }
-        }
-      }
-    }
-    if(info.two_pair && info.hand_strength < 2)
-      info.hand_strength = 3;
+  // wrapper functions
+  // decided on wrappers to keep consistent calling in deck.get_info()
+  protected void multiples_finder(){
+    info.multiples_finder();
   }
 
   protected void flush_finder(){
-    int count;
-    int high;
-    info.flush_high = 0;
-    info.flush_total = 0;
-
-    for (int i = 0; i < total_cards - 1; ++i) {
-      count = 1;
-      high = 0;
-      for (int j = i + 1; j < total_cards; ++j) {
-        if (card[i].suit == card[j].suit) {
-          ++count;
-          if(card[i].value > card[j].value) {
-            if(high < card[i].value)
-              high = card[i].value;
-          }
-          else {
-            if(high < card[j].value)
-              high = card[j].value;
-          }
-        }
-      }
-      if(count > info.flush_total){
-        info.flush_total = count;
-        info.flush_high = high + 2;
-      }
-      if(count > 4)
-        info.flush = true;
-        if(info.flush && info.hand_strength < 5)
-          info.hand_strength = 5;
-    }
+    info.flush_finder();
   }
 
   protected void straight_finder(){
-    //holds possible straights and which cards are needed for straight
-    //find_straight_odds fill out the array for each card
-
-    //creates array to hold current card values
-    boolean [] straight_array = new boolean[13];
-    //where cards are needed for a possible straight
-    int [] needed = new int[13];
-    int high_straight = 0;
-    int count;
-    int i,j,k, l;
-
-    //find where all the cards are
-    for(i = 0; i < total_cards; ++i)
-      straight_array[card[i].value] = true;
-
-    //evaluates each five card chunk for possible straights
-    //if five cards to be dealt, then evaluates each position
-    //for needing 3, 4, or 5 cards in five spaces
-    //if two cards are to be dealt, then needs four in five
-    //if one card left to deal then needs four in five
-    //achieved by: count >= (total_cards - 2)
-    for(j = 0; j < 9; ++j){
-      count = 0;
-      //runs forward through five positions and counts cards
-      for(k = 0; k < 5; ++k){
-        if(straight_array[j+k]) {
-          high_straight = j + k;
-          ++count;
-        }
-        //if there is a straight
-        if(count == 5) {
-          info.straight = true;
-          info.straight_high = high_straight;
-          if(info.hand_strength < 4)
-            info.hand_strength = 4;
-          break; //no reason to continue
-        }
-        //if there is cards needed to make straight and it's possible with
-        //remaining number of cards to be dealt
-        else if(count >= (total_cards-2)){
-          for(l = 0; l < 5; ++l){
-            if(!straight_array[j+l] && count > needed[j+l]){
-              needed[j+l] = count;
-            }
-          }
-        }
-      }
-    }
-
-      /* a very specific problem arises with the above algorithm when total_cards is 5
-         0 4 0 0 0 0 4 0 .. 0 -- 5,6,7,8 in hand, needing only 4 or 9
-         the above algorithm will evaluate to:
-         3 4 0 0 0 0 4 3 0 .. 0
-         Therefore, even numbers of 3's on each side of one 4 need to be removed
-         OR if there are two 4's, then eliminate all 3's no matter what
-         0 0 0 4 0 0 0 3 3 .. 0 -- 3,4,6,7,9 in hand, needing 5, OR: 10, Jack
-         the above algorithm will evaluate to
-         3 0 0 4 0 0 3 0 3 .. 0
-         Therefore, the smaller quantity of 3's on one side of the 4 need to
-         be removed (when non-equal) - while the larger quantity stays
-      */
-    if(total_cards == 5) {
-      int right = 0;
-      int left = 0;
-      int fours = 0;
-
-      //checks for 4's in needed array. No need to check end values (0, 12)
-      for (i = 1; i < 12; ++i){
-        //counts the number of fours
-        if(needed[i] == 4){
-          ++fours;
-          //counts 3's to the left of the 4
-          for(j = 0; j < i; ++j){
-            if(needed[j] == 3)
-              ++left;
-          }
-          //counts 3's to the right of the 4
-          for(k = i+1; k < 13; ++k){
-            if(needed[k] == 3)
-              ++right;
-          }
-          //if left and right are non-zero and equal OR
-          // if there are multiple 4's
-          if((left > 0 && right == left) || fours > 1 || (left + right == 1)){
-            for(j = 0; j < 13; ++j){
-              //eliminates all 3's
-              if(needed[j] == 3)
-                needed[j] = 0;
-            }
-          }
-          //right is larger, so eliminate all left 3's
-          else if(left < right){
-            for(l = 0; l < i; ++l){
-              if(needed[l] == 3)
-                needed[l] = 0;
-            }
-          }
-          //left is larger so eliminate all right 3's
-          else if(right < left){
-            for(l = i+1; l < 13; ++l){
-              if(needed[l] == 3)
-                needed[l] = 0;
-            }
-          }
-        }
-      }
-    }
-    //copies total evaluation into hand_info object
-    info.straight_opportunities = needed;
+    info.straight_finder(total_cards);
   }
 
   protected void quick_evaluation() {
@@ -297,7 +117,7 @@ class hand {
     }
 
     int to_deal = 7 - total_cards;
-    double total = 0;
+    double total;
     double other_total = 1;
     int deck = 52 - total_cards;
 
@@ -588,13 +408,13 @@ class hand {
     //CASE 1: already two_pair
     //CASE 2: not possible
     //CASE 3: possible
-    //Case 3.1: full house are not current ranks in hand
-    //Case 3.2: one card of one rank of full_house is currently in hand
-    //Case 3.3: one card of each rank of full_house is in hand
-    //Case 3.3.1: one pair of full_house is in hand
-    //Case 3.4: one pair and one card of two_pair in hand
-    //Case 3.4.1: three_kind in hand, need pair
-    //Case 3.5: two_pair in hand, need one more
+      //Case 3.1: full house are not current ranks in hand
+      //Case 3.2: one card of one rank of full_house is currently in hand
+      //Case 3.3: one card of each rank of full_house is in hand
+        //Case 3.3.1: one pair of full_house is in hand
+      //Case 3.4: one pair and one card of two_pair in hand
+        //Case 3.4.1: three_kind in hand, need pair
+      //Case 3.5: two_pair in hand, need one more
 
     int to_deal = 7 - total_cards; //the remaining cards to be dealt
 
@@ -768,8 +588,8 @@ class hand {
 
   //in progress
   protected void find_straight_odds_two(){
-    int first = card[0].value;
-    int second = card[1].value;
+    int first = card[0].rank;
+    int second = card[1].rank;
     if(first > second){
       int temp = first;
       first = second;
@@ -862,7 +682,7 @@ class hand {
     int to_deal = 7 - total_cards;
 
     //CASE 1: if already flush in hand
-    if(flush_number == 5){
+    if(info.flush){
       info.flush_odds = 100;
       return;
     }
@@ -927,7 +747,7 @@ class hand {
     if(suit != 0) {
       for (i = 0; i < total_cards; ++i) {
         if (card[i].suit == suit)
-          info.flush_high = card[i].value;
+          info.flush_high = card[i].rank;
       }
     }
 
@@ -935,7 +755,7 @@ class hand {
     if(info.straight){
       int count = 0;
       for(i = 0; i < total_cards; ++i){
-        if(card[i].value >= (info.flush_high - 4) && card[i].suit == suit)
+        if(card[i].rank >= (info.flush_high - 4) && card[i].suit == suit)
           ++count;
       }
       if(count == 5)

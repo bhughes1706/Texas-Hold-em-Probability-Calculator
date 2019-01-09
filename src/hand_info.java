@@ -49,6 +49,10 @@ class hand_info {
     hand_strength = 0;
   }
 
+  //****GENERAL_INFO HAND CLASS FUNCTION MUST BE DONE BEFORE ANY OF THE FOLLOWING****
+
+  //only finds best possible hand strength -- used for iteration due to its quickness
+  //cannot be used for odds calculation of hand types
   protected void quick_evaluation() {
     int i, j, count;
 
@@ -110,6 +114,7 @@ class hand_info {
     }
   }
 
+  //evaluates further depending on the highest hand type
   protected void additional_evaluation(){
     //this adds evaluations as needed
     //most are simply finding the highest of_kind or second_pair
@@ -144,6 +149,133 @@ class hand_info {
           if (ranks[i] > 3)
             value_kind_high = i;
         }
+    }
+  }
+
+  //this is an evaluation done to allow the odds functions to work correctly
+  //finds any hand that needs more than one of - two kind, full house, two pair, etc.
+  protected void multiples_finder() {
+    if(rank_no[2] > 0) {
+      kind_high = 2;
+      if(rank_no[3] > 0)
+        full_house = true;
+    }
+    if(rank_no[3] > 0)
+      kind_high = 3;
+    if(rank_no[4] > 0)
+      kind_high = 4;
+    if(rank_no[2] == 2)
+      two_pair = true;
+    if(rank_no[3] == 3)
+      three_pair = true;
+
+  }
+
+  //finds the highest number of suits that match and records the number
+  //this is less intensive than the quick evaluation, due to not caring
+  //about the rank of the flush, since odds don't care about it.
+  protected void flush_finder() {
+    for(int i = 0; i < 4; ++i){
+      if(suit_no[i] != 0)
+        flush_total = i;
+    }
+    if(flush_total == 5)
+      flush = true;
+  }
+
+  //holds possible straights and which cards are needed for straight
+  //find_straight_odds fill out the array for each card
+  protected void straight_finder(int total_cards){
+    int count;
+    int i,j,k,l;
+
+    //evaluates each five card chunk for possible straights
+    //if five cards to be dealt, then evaluates each position
+    //for needing 3, 4, or 5 cards in five spaces
+    //if two cards are to be dealt, then needs four in five
+    //if one card left to deal then needs four in five
+    //achieved by: count >= (total_cards - 2)
+    for(j = 0; j < 9; ++j){
+      count = 0;
+      //runs forward through five positions and counts cards
+      for(k = 0; k < 5; ++k){
+        if(ranks[j+k] != 0) {
+          ++count;
+        }
+        //if there is a straight
+        if(count == 5) {
+          straight = true;
+          return; //no reason to continue
+        }
+        //if there is cards needed to make straight and it's possible with
+        //remaining number of cards to be dealt
+        else if(count >= (total_cards-2)){
+          for(l = 0; l < 5; ++l){
+            if(ranks[j+l] == 0 && count > straight_opportunities[j+l]){
+              straight_opportunities[j+l] = count;
+            }
+          }
+        }
+      }
+    }
+
+      /* a very specific problem arises with the above algorithm when total_cards is 5
+         0 4 0 0 0 0 4 0 .. 0 -- 5,6,7,8 in hand, needing only 4 or 9
+         the above algorithm will evaluate to:
+         3 4 0 0 0 0 4 3 0 .. 0
+         Therefore, even numbers of 3's on each side of one 4 need to be removed
+         OR if there are two 4's, then eliminate all 3's no matter what
+         0 0 0 4 0 0 0 3 3 .. 0 -- 3,4,6,7,9 in hand, needing 5, OR: 10, Jack
+         the above algorithm will evaluate to
+         3 0 0 4 0 0 3 0 3 .. 0
+         Therefore, the smaller quantity of 3's on one side of the 4 need to
+         be removed (when non-equal) - while the larger quantity stays
+      */
+    if(total_cards == 5) {
+      int right = 0;
+      int left = 0;
+      int fours = 0;
+
+      //checks for 4's in needed array. No need to check end values (0, 12)
+      for (i = 1; i < 12; ++i){
+        //counts the number of fours
+        if(straight_opportunities[i] == 4){
+          ++fours;
+          //counts 3's to the left of the 4
+          for(j = 0; j < i; ++j){
+            if(straight_opportunities[j] == 3)
+              ++left;
+          }
+          //counts 3's to the right of the 4
+          for(k = i+1; k < 13; ++k){
+            if(straight_opportunities[k] == 3)
+              ++right;
+          }
+          //if left and right are non-zero and equal OR
+          // if there are multiple 4's
+          if((left > 0 && right == left) || fours > 1 || (left + right == 1)){
+            for(j = 0; j < 13; ++j){
+              //eliminates all 3's
+              if(straight_opportunities[j] == 3)
+                straight_opportunities[j] = 0;
+            }
+          }
+          //right is larger, so eliminate all left 3's
+          else if(left < right){
+            for(l = 0; l < i; ++l){
+              if(straight_opportunities[l] == 3)
+                straight_opportunities[l] = 0;
+            }
+          }
+          //left is larger so eliminate all right 3's
+          else if(right < left){
+            for(l = i+1; l < 13; ++l){
+              if(straight_opportunities[l] == 3)
+                straight_opportunities[l] = 0;
+            }
+          }
+        }
+      }
     }
   }
 }

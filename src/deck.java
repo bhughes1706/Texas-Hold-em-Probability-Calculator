@@ -175,11 +175,11 @@ class deck {
       ++record[compare(user, opponent)];
 
       for (j = 0; j < 2; ++j) {
-        add(hand[opponent].card[j].suit, hand[opponent].card[j].value);
+        add(hand[opponent].card[j].suit, hand[opponent].card[j].rank);
         --hand[opponent].total_cards;
       }
       for (j = dealer_start; j < 5; ++j) {
-        add(dealer.card[j].suit, dealer.card[j].value);
+        add(dealer.card[j].suit, dealer.card[j].rank);
         --dealer.total_cards;
       }
     }
@@ -200,13 +200,13 @@ class deck {
     //if user and opponent have same hand strength, following finds tiebreaker
     switch(user.hand_strength) {
       case 0:
-        if (hand[0].card[0].value > hand[1].card[0].value)
+        if (hand[0].card[0].rank > hand[1].card[0].rank)
           return 0;
-        if (hand[0].card[0].value < hand[1].card[0].value)
+        if (hand[0].card[0].rank < hand[1].card[0].rank)
           return 1;
-        if (hand[0].card[1].value > hand[1].card[1].value)
+        if (hand[0].card[1].rank > hand[1].card[1].rank)
           return 0;
-        if (hand[0].card[1].value < hand[1].card[1].value)
+        if (hand[0].card[1].rank < hand[1].card[1].rank)
           return 1;
         return 2;
       case 1:
@@ -224,15 +224,15 @@ class deck {
           return 1;
         //evaluates extra cards, can't apply to full house, as it already is 5 cards
         if (user.hand_strength != 6) {
-          if (hand[0].card[0].value > hand[1].card[0].value)
+          if (hand[0].card[0].rank > hand[1].card[0].rank)
             return 0;
-          else if (hand[0].card[0].value < hand[1].card[0].value)
+          else if (hand[0].card[0].rank < hand[1].card[0].rank)
             return 1;
             //evaluates second card in hand in case of first being tie,
             //but only for three kind and two kind
-          else if (hand[0].card[1].value > hand[1].card[1].value)
+          else if (hand[0].card[1].rank > hand[1].card[1].rank)
             return 0;
-          else if (hand[0].card[1].value < hand[1].card[1].value)
+          else if (hand[0].card[1].rank < hand[1].card[1].rank)
             return 1;
         } else
           return 2;
@@ -271,9 +271,7 @@ class deck {
 
     //the below evaluates hand for each of the following conditions.
     eval.general_info(); //must always do this first
-    eval.of_kind_finder();
-    eval.full_house_finder();
-    eval.pair_finder();
+    eval.multiples_finder();
     eval.flush_finder();
     eval.straight_finder();
 
