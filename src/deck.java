@@ -1,16 +1,18 @@
 import java.util.Random;
 
 class deck {
-  private node head;
+  private node [] head;
   private int deck_size;
-  private hand hand[];
+  private int [] suit_size;
+  private hand [] hand;
   private hand dealer;
   private final int players = 2;
   private final int user = 0;
   private final int opponent = 1;
 
   deck() {
-    head = null;
+    head = new node[4];
+    suit_size = new int[4];
     deck_size = 0;
     hand = new hand[players];
   }
@@ -41,13 +43,16 @@ class deck {
 
   //adds each card built to LLL, caller: build_suit
   private void add(int suit, int value) {
-    if (head == null) {
-      head = new node(suit, value);
+    if (head[suit] == null) {
+      head[suit] = new node(suit, value);
+      ++suit_size[suit];
+      ++deck_size;
       return;
     }
     node temp = new node(suit, value);
-    temp.next = head;
-    head = temp;
+    temp.next = head[suit];
+    head[suit] = temp;
+    ++suit_size[suit];
     ++deck_size;
   }
 
@@ -71,46 +76,54 @@ class deck {
   //deals one card to hand, 0 hand_number is user
   //3 or higher will deal to dealer's hand
   protected void deal_card(int hand_number) throws NullPointerException {
-    //if deck is empty -- shouldn't happen
-    if (head == null) return;
+    int value_rand = 0;
+    int suit_rand = 0;
     Random rand = new Random(); //gets random card placement
-    int card_placement = rand.nextInt(deck_size);
+
+    //ensure value resulting from random number is legitimate for LLL
+    do{
+      suit_rand = rand.nextInt(4);
+      value_rand = rand.nextInt(13);
+    }while(value_rand >= suit_size[suit_rand]);
+
     card temp;
-    //if head is needed
-    if (card_placement == 0)
-      temp = remove_first(head);
-      //if any other card is needed
+    //if suit doesn't have enough cards in it to satisfy random value
+
+    if(value_rand == 0)
+      temp = remove_first(head[suit_rand], suit_rand);
     else
-      temp = deal_from_deck(head, card_placement);
+      temp = deal_from_deck(head[suit_rand], --value_rand);
     //if hand is opponent or user
+
     if (hand_number < 3)
       hand[hand_number].add(temp);
       //if dealing to dealer
     else
       dealer.add(temp);
-    --deck_size;
-  }
 
-  //if head is removed, this function will be called
-  private card remove_first(node head) {
-    card temp;
-    if (head.next == null) {
-      temp = head.card;
-      this.head = null;
-      return temp;
-    }
-    temp = head.card;
-    this.head = head.next;
-    return temp;
+    --deck_size;
+    --suit_size[suit_rand];
   }
 
   //function traverses through LLL to find card_placement
-  private card deal_from_deck(node head, int card_placement) {
+  //recursive fx, caller is deal_card
+  private card deal_from_deck(node head, int rank) {
     if (head == null)
       return null;
-    if (card_placement == 1)
+    if (rank == 0)
       return remove_card(head);
-    return deal_from_deck(head.next, --card_placement);
+    return deal_from_deck(head.next, --rank);
+  }
+
+  //if head is removed, this function will be called
+  private card remove_first(node head, int suit) {
+    card temp;
+    temp = head.card;
+    if(head.next != null)
+      this.head[suit] = head.next;
+    else
+      this.head[suit] = null;
+    return temp;
   }
 
   //removes card (only if it's not first card)
@@ -120,9 +133,9 @@ class deck {
       head.next = null;
       return temp_card;
     }
-    node temp_node = head.next.next;
+    node temp = head.next.next;
     head.next = null;
-    head.next = temp_node;
+    head.next = temp;
     return temp_card;
   }
 
