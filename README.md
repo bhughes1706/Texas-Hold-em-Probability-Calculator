@@ -1,4 +1,4 @@
-# Texas Hold'em Continuing Probabilities Trainer
+# Texas Hold'em Continuing Probabilities Calculator
 
 **Still in progress, in testing phase currently**
 
