@@ -166,7 +166,7 @@ class hand_info {
       kind_high = 4;
     if(rank_no[2] == 2)
       two_pair = true;
-    if(rank_no[3] == 3)
+    if(rank_no[2] == 3)
       three_pair = true;
 
   }

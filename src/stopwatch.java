@@ -1,3 +1,7 @@
+/* This class provides a stopwatch to benchmark performance for the iterations
+   and odds making main functions
+ */
+
 class stopwatch {
   private long start = 0;
 

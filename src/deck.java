@@ -18,6 +18,7 @@ class deck {
   }
 
   //creates 52 card deck. takes first suit as argument (0)
+  //made a wrapper, so the call from main is easier
   protected void init_deck() {
     build_deck(0);
   }
@@ -25,7 +26,7 @@ class deck {
   //builds each suit up to 4 by calling build_suit
   // caller: init_deck  callee: build_deck
   private int build_deck(int suit) {
-    int count = 0;
+    int count = 0; //variable to count cards and return
     if (suit == 4)
       return count;
     count = build_suit(suit, 0);
@@ -37,26 +38,28 @@ class deck {
   private int build_suit(int suit, int value) {
     if (value == 13)
       return 0;
-    add(suit, value);
+
+    add(suit, value); //adds card to deck
+
     return build_suit(suit, value + 1) + 1;
   }
 
   //adds each card built to LLL, caller: build_suit
   private void add(int suit, int value) {
-    if (head[suit] == null) {
+    if (head[suit] == null) //if adding first item
       head[suit] = new node(suit, value);
-      ++suit_size[suit];
-      ++deck_size;
-      return;
+
+    else { //if list already exists
+      node temp = new node(suit, value);
+      temp.next = head[suit];
+      head[suit] = temp;
     }
-    node temp = new node(suit, value);
-    temp.next = head[suit];
-    head[suit] = temp;
+
     ++suit_size[suit];
     ++deck_size;
   }
 
-  //builds dealer hand by creating 5 card slots, and adds 3
+  //builds dealer hand by creating 5 card slots
   protected void add_dealer() {
     dealer = new hand(5);
   }
@@ -108,10 +111,12 @@ class deck {
   //function traverses through LLL to find card_placement
   //recursive fx, caller is deal_card
   private card deal_from_deck(node head, int rank) {
-    if (head == null)
+    if (head == null) //if end of list is reached
       return null;
-    if (rank == 0)
+
+    if (rank == 0) //if you found the card you want
       return remove_card(head);
+
     return deal_from_deck(head.next, --rank);
   }
 
@@ -119,23 +124,29 @@ class deck {
   private card remove_first(node head, int suit) {
     card temp;
     temp = head.card;
+    //if list is longer than one item
     if(head.next != null)
       this.head[suit] = head.next;
+    //if head is only item
     else
       this.head[suit] = null;
+
     return temp;
   }
 
   //removes card (only if it's not first card)
   private card remove_card(node head) {
     card temp_card = head.next.card;
-    if (head.next.next == null) {
+    //if card to remove is end of list
+    if (head.next.next == null)
       head.next = null;
-      return temp_card;
+    //otherwise
+    else {
+      node temp = head.next.next;
+      head.next = null;
+      head.next = temp;
     }
-    node temp = head.next.next;
-    head.next = null;
-    head.next = temp;
+
     return temp_card;
   }
 
@@ -143,6 +154,7 @@ class deck {
   protected void display() {
     System.out.print("\nYour hand:");
     hand[user].display();
+
     if (dealer != null) {
       System.out.print("\n\nDealer's hand: ");
       dealer.display();
@@ -162,7 +174,9 @@ class deck {
     int dealer_start = dealer.total_cards, j, i;
     int[] record = new int[3];
     stopwatch watch = new stopwatch();
+    //begins stopwatch for benchmarking
     watch.begin();
+    //deals needed cards for opponent and dealer
     for (i = 0; i < iterations; ++i) {
       for (j = 0; j < 2; ++j)
         deal_card(opponent);
@@ -174,6 +188,7 @@ class deck {
       //return 0 for win, 1 for loss, 2 for tie
       ++record[compare(user, opponent)];
 
+      //adds cards back to deck
       for (j = 0; j < 2; ++j) {
         add(hand[opponent].card[j].suit, hand[opponent].card[j].rank);
         --hand[opponent].total_cards;
@@ -183,6 +198,8 @@ class deck {
         --dealer.total_cards;
       }
     }
+
+    //prints how long it took to complete the iterations
     System.out.println("\nTime elapsed: " + watch.elapsedTime());
     return record;
   }
@@ -270,7 +287,7 @@ class deck {
       return null;
 
     //the below evaluates hand for each of the following conditions.
-    eval.general_info(); //must always do this first
+    eval.general_info(); //***THIS MUST BE DONE BEFORE THE FOLLOWING FUNCTIONS****
     eval.multiples_finder();
     eval.flush_finder();
     eval.straight_finder();

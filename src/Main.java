@@ -4,12 +4,11 @@ import java.text.DecimalFormat;
 
 //All functions and menu are for testing purposes at the moment
 //could be improved
-public class CardProbability {
+public class Main {
   public static void main(String[] args) {
     int selector = 1;
     System.out.println("\nWelcome to Texas Hold'em training. " +
-        "\nThis program will train you to recognize probabilities in all situations" +
-        "\nLet's start with an easy one: ");
+        "\nThis program will train you to recognize probabilities in all situations");
     while(selector == 1)
       selector = init_menu();
     deck deck = new deck();
@@ -75,8 +74,8 @@ public class CardProbability {
         "\nFull house: " + df.format(temp.full_house_odds) + "%" +
         "\nAny Flush: " + df.format(temp.flush_odds) + "%" +
         "\nStraight: " + df.format(temp.straight_odds) + "%" +
-        "\nHand strength: " + temp.hand_strength +
-        "\nTime: " + stopwatch.elapsedTime());
+        //"\nHand strength: " + temp.hand_strength +
+        "\n\nTime Elapsed: " + stopwatch.elapsedTime());
   }
 
   private static void prob_hand(deck deck)throws ArrayIndexOutOfBoundsException {

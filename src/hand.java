@@ -105,7 +105,7 @@ class hand {
     statistical modeling.
    */
 
-  //this is correct
+  //Finds the odds of getting AT LEAST two of a kind
   protected void find_two_kind_odds() {
     //CASE 1: already two of kind
     //CASE 2: possible -- (1 - never have a match to anything in hand)
@@ -135,11 +135,11 @@ class hand {
     //CASE 1: already two_pair
     //CASE 2: not possible
     //CASE 3: possible
-    //Case 3.1: two pair are not current ranks in hand
-    //Case 3.2: one card of one rank of two_pair is currently in hand
-    //Case 3.3: one card of each rank of two_pair is in hand
-    //Case 3.3.1: one pair of two_pair is in hand
-    //Case 3.4: one pair and one card of two_pair in hand
+      //Case 3.1: two pair are not current ranks in hand
+      //Case 3.2: one card of one rank of two_pair is currently in hand
+      //Case 3.3: one card of each rank of two_pair is in hand
+        //Case 3.3.1: one pair of two_pair is in hand
+      //Case 3.4: one pair and one card of two_pair in hand
 
     if(info.two_pair) {
       info.two_pair_odds = 100;
@@ -166,7 +166,6 @@ class hand {
         other_total *= combo(13-current_ranks-1, to_deal-4)
             * pow(4, to_deal-4);
       total += other_total;
-      other_total = 0;
     }
 
     //Case 3.2: one card of one rank of two_pair is currently in hand
@@ -182,7 +181,6 @@ class hand {
               * pow(4, to_deal - 3);
         total += other_total;
       }
-      other_total = 0;
     }
 
     //Case 3.3: one card of each rank of two_pair is in hand
@@ -196,16 +194,14 @@ class hand {
           other_total *= combo(13 - current_ranks, to_deal - 2) * pow(4, to_deal - 2);
         total += other_total;
       }
-      other_total = 0;
 
       //Case 3.3.1: one pair of two_pair is in hand
       if (high > 1) {
-        other_total += combo(4, 2) * (13 - current_ranks);
+        other_total = combo(4, 2) * (13 - current_ranks);
         if(to_deal > 2)
           other_total *= combo(13 - current_ranks - 1, to_deal - 2) * pow(4, to_deal - 2);
         total += other_total;
       }
-      other_total = 0;
     }
 
     //Case 3.4: one pair and one card of two_pair in hand
@@ -288,10 +284,9 @@ class hand {
     //high -> really combo(2,1) as only need one of two cards (4 if two_pair)
     //combo(12,to_deal-1) -> all other cards of ranks that don't matter
     //pow -> same as above, for suits
-    if(two_pair != 0)
-      info.kind_high *= 2;
+    int matches = 2 * info.rank_no[2];
     if(info.kind_high > 1) {
-      total += info.kind_high * combo(12, to_deal - 1) * pow(4, to_deal - 1);
+      total += matches * combo(12, to_deal - 1) * pow(4, to_deal - 1);
     }
     total /= combo(deck, to_deal);
     info.three_kind_odds = 100*total;
@@ -508,13 +503,13 @@ class hand {
     }
 
     //Case 3.5: need one card to complete full_house
-    if(to_deal >= 1 && ((info.kind_high == 3 && single_ranks > 0) || info.two_pair)){
+    if(to_deal >= 1 && ((info.kind_high == 3 && single_ranks > 0) || info.rank_no[2] > 0)){
       //Case 3.5.1: hand three_kind and single rank in hand
       if(info.kind_high == 3)
         other_total = 3 * single_ranks;
         //Case 3.5.2: have two pair in hand
-      else if(info.two_pair)
-        other_total += 2 * 2;
+      else
+        other_total += 2 * info.rank_no[2];
       if(to_deal > 1){
         other_total *= (13-total_ranks) * pow(4,to_deal-1);
       }
@@ -597,8 +592,8 @@ class hand {
     }
 
     //finds each run of five that will not run into current ranks
-    // (x x x x x) x 8 -> will be one empty five position
-    // (x [x <x x x) x] x> x 10 -> will be three empty five positions
+    // (x x x x x) x 8 -> will be 1 empty five position
+    // (x [x <x x x) x] x> x 10 -> will be 3 empty five positions
     int empty_fives = 0;
     int hit = 0, i, j;
 
@@ -635,7 +630,6 @@ class hand {
     if(empty_fives != 0){
       other_total = empty_fives * pow(4,5);
       total += other_total;
-      other_total = 0;
     }
 
     /*
@@ -657,8 +651,9 @@ class hand {
         ++twos;
     }
 
-    if(ones != 0){
-
+    if(ones != 0 && twos == 0){
+      other_total = (ones - 3) * (pow(4,4) * (13 - user_cards) * 4);
+      total += other_total;
     }
 
     if(twos != 0){
